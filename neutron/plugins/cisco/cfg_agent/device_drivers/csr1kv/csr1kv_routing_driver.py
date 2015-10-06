@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 import ciscoconfparse
 from ncclient import manager
 
-from oslo.config import cfg
+#  from oslo.config import cfg
 
 from neutron.plugins.cisco.cfg_agent import cfg_exceptions as cfg_exc
 from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (
@@ -36,6 +36,7 @@ LOG = logging.getLogger(__name__)
 # N1kv constants
 T1_PORT_NAME_PREFIX = 't1_p:'  # T1 port/network is for VXLAN
 T2_PORT_NAME_PREFIX = 't2_p:'  # T2 port/network is for VLAN
+
 
 class CSR1kvRoutingDriver(devicedriver_api.RoutingDriverBase):
     """CSR1kv Routing Driver.
@@ -56,7 +57,7 @@ class CSR1kvRoutingDriver(devicedriver_api.RoutingDriverBase):
             if credentials:
                 self._csr_user = credentials['username']
                 self._csr_password = credentials['password']
-            #self._timeout = cfg.CONF.device_connection_timeout
+            #  self._timeout = cfg.CONF.device_connection_timeout
             self._timeout = device_params['booting_time']
             self._csr_conn = None
             self._intfs_enabled = False
@@ -489,7 +490,7 @@ class CSR1kvRoutingDriver(devicedriver_api.RoutingDriverBase):
         self._edit_running_config(confstr, 'CREATE_SUBINTERFACE')
 
     def _remove_subinterface(self, subinterface):
-        #Optional : verify this is the correct subinterface
+        #  Optional : verify this is the correct subinterface
         if self._interface_exists(subinterface):
             confstr = snippets.REMOVE_SUBINTERFACE % subinterface
             self._edit_running_config(confstr, 'REMOVE_SUBINTERFACE')
@@ -547,7 +548,6 @@ class CSR1kvRoutingDriver(devicedriver_api.RoutingDriverBase):
             confstr = snippets.CREATE_ACL % (acl_no, network, netmask)
             rpc_obj = conn.edit_config(target='running', config=confstr)
             self._check_response(rpc_obj, 'CREATE_ACL')
-
 
         confstr = snippets.SET_DYN_SRC_TRL_INTFC % (acl_no, outer_intfc,
                                                     vrf_name)
@@ -690,7 +690,3 @@ class CSR1kvRoutingDriver(devicedriver_api.RoutingDriverBase):
         e_tag = rpc_obj._root[0][1].text
         params = {'snippet': snippet_name, 'type': e_type, 'tag': e_tag}
         raise cfg_exc.CSR1kvConfigException(**params)
-
-
-
-

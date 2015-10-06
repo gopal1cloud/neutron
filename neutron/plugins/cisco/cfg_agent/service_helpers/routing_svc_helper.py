@@ -31,12 +31,12 @@ from neutron.plugins.cisco.cfg_agent.device_drivers import driver_mgr
 from neutron.plugins.cisco.cfg_agent import device_status
 from neutron.plugins.cisco.common import cisco_constants as c_constants
 
-from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 from neutron.openstack.common import rpc as o_rpc  # ICEHOUSE_BACKPORT
-
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (asr1k_routing_driver as asr1kv_driver)
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import asr1k_cfg_syncer
-
+from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
+#  from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+#  (asr1k_routing_driver as asr1kv_driver)
+#  from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+#  asr1k_cfg_syncer
 
 
 LOG = logging.getLogger(__name__)
@@ -94,6 +94,8 @@ class RouterInfo(object):
         return N_ROUTER_PREFIX + self.router_id
 
 # class CiscoRoutingPluginApi(n_rpc.RpcProxy):  # ICEHOUSE_BACKPORT
+
+
 class CiscoRoutingPluginApi(proxy.RpcProxy):
     """RoutingServiceHelper(Agent) side of the  routing RPC API."""
 
@@ -138,8 +140,8 @@ class CiscoRoutingPluginApi(proxy.RpcProxy):
 
 class RoutingServiceHelper(object):
 
-
     BASE_RPC_API_VERSION = '1.1'
+
     def create_rpc_dispatcher(self):
         return n_rpc.PluginRpcDispatcher([self])
 
@@ -166,11 +168,11 @@ class RoutingServiceHelper(object):
         self.endpoints = [self]
         # self.conn.create_consumer(self.topic, self.endpoints, fanout=False)
         # self.conn.consume_in_threads()  # ICEHOUSE_BACKPORT
-        self.dispatcher = self.create_rpc_dispatcher() # ICEHOUSE_BACKPORT
+        self.dispatcher = self.create_rpc_dispatcher()  # ICEHOUSE_BACKPORT
         self.conn.create_consumer(self.topic, self.dispatcher, fanout=False)
         self.conn.consume_in_thread()
 
-    ### Notifications from Plugin ####
+    # Notifications from Plugin
 
     def router_deleted(self, context, routers):
         """Deal with router deletion RPC message."""
@@ -260,7 +262,8 @@ class RoutingServiceHelper(object):
                 if removed_devices_info:
                     for hd_id in removed_devices_info['hosting_data']:
                         self._drivermgr.remove_driver_for_hosting_device(hd_id)
-                        LOG.debug("Routing service processing successfully completed")
+                        LOG.debug("Routing \
+                           service processing successfully completed")
 
         except Exception:
             LOG.exception(_("Failed processing routers"))
@@ -314,7 +317,8 @@ class RoutingServiceHelper(object):
         :return: List of router dicts of format:
                  [ {router_dict1}, {router_dict2},.....]
         """
-        LOG.info("_fetch_router_info, router_ids: %s   all_routers: %s" % (router_ids, all_routers)) 
+        LOG.info("_fetch_router_info, router_ids: %s   all_routers: %s" % (
+            router_ids, all_routers))
         try:
             if all_routers:
                 return self.plugin_rpc.get_routers(self.context)
@@ -626,7 +630,8 @@ class RoutingServiceHelper(object):
                 driver.enable_internal_network_NAT(ri, port, ex_gw_port)
 
     def _external_gateway_removed(self, ri, ex_gw_port):
-        LOG.debug("\n\n\n******* EGR\n    ri: %s\n  egp: %s" % (ri, ex_gw_port))
+        LOG.debug("\n\n\n******* EGR\n    ri: %s\n  egp: %s" % (
+            ri, ex_gw_port))
         driver = self._drivermgr.get_driver(ri.id)
         if ri.snat_enabled and ri.internal_ports:
             for port in ri.internal_ports:
@@ -680,6 +685,3 @@ class RoutingServiceHelper(object):
             LOG.error(_("Ignoring multiple IPs on router port %s"), port['id'])
         prefixlen = netaddr.IPNetwork(port['subnet']['cidr']).prefixlen
         port['ip_cidr'] = "%s/%s" % (ips[0]['ip_address'], prefixlen)
-
-
-
