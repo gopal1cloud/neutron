@@ -21,7 +21,7 @@ import xml.etree.ElementTree as ET
 import ciscoconfparse
 
 import eventlet
-eventlet.monkey_patch(socket=True, select=True)
+# eventlet.monkey_patch(socket=True, select=True)
 
 from ncclient import manager
 from ncclient import transport as nctransport
@@ -40,6 +40,9 @@ from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv \
     import asr1k_cfg_syncer
 
 from neutron.common import constants
+
+eventlet.monkey_patch(socket=True, select=True)
+
 
 LOG = logging.getLogger(__name__)
 
@@ -71,7 +74,7 @@ class ASR1kConfigInfo(object):
         if len(read_ok) != len(cfg.CONF.config_file):
             raise cfg.Error(_("Some config files were not parsed properly"))
 
-    #  asr_count = 0
+        # asr_count = 0
         for parsed_file in multi_parser.parsed:
             for parsed_item in parsed_file.keys():
 
@@ -462,7 +465,9 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
     def _csr_add_default_route(self, ri, gw_ip, gw_port):
         vrf_name = self._csr_get_vrf_name(ri)
         subinterface = self._get_interface_name_from_hosting_port(gw_port)
-    #  ext_vlan = self._get_interface_vlan_from_hosting_port(gw_port)
+        # ext_vlan = self._get_interface_vlan_from_hosting_port(gw_port)
+        self._get_interface_vlan_from_hosting_port(gw_port)
+        self._get_interface_vlan_from_hosting_port(gw_port)
         router_id = self._get_short_router_id_from_port(gw_port)
 
         if self._fullsync and router_id in self._existing_cfg_dict['routes']:
@@ -477,7 +482,7 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
     def _csr_add_floating_ip(self, ri, ex_gw_port, floating_ip, fixed_ip):
         vrf_name = self._csr_get_vrf_name(ri)
-        # hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
+        hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
         hsrp_grp = self._get_hsrp_grp_num_from_net_id(ex_gw_port['network_id'])
 
         self._add_floating_ip(floating_ip, fixed_ip, vrf_name,
@@ -487,7 +492,9 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
         vrf_name = self._csr_get_vrf_name(ri)
         # out_intfc_name = self._get_interface_name_from_hosting_port
         # (ex_gw_port)
-        # hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
+        self._get_interface_name_from_hosting_port(ex_gw_port)
+        self._get_interface_name_from_hosting_port(ex_gw_port)
+        hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
         hsrp_grp = self._get_hsrp_grp_num_from_net_id(ex_gw_port['network_id'])
 
         # First remove NAT from outer interface
