@@ -117,9 +117,9 @@ class CiscoCfgAgent(manager.Manager):
                           "lets each service helper to process its neutron "
                           "resources.")),
         cfg.StrOpt('routing_svc_helper_class',
-                   default='neutron.plugins.cisco.cfg_agent.service_helpers'
-                       '.asr_routing_svc_helper.RoutingServiceHelper \
-                       WithPhyContext',
+                   default='neutron.plugins.cisco.cfg_agent.service_helpers' \
+                   '.asr_routing_svc_helper.Routing \
+                   ServiceHelperWithPhyContext', \
                    help=_("Path of the routing service helper class.")),
     ]
 
@@ -356,23 +356,20 @@ class CallTraceManager:
     trace_all = False
 
     def trace_calls(current_frame, why, arg):
-
     """
-    This function is triggered as a callback when sys.trace is invoked.
-    For each entered stack frame,
+    This function is triggered as a callback when sys.trace is invoked.  For each entered stack frame,
     caller and callee are logged.
     :param current_frame: Current stack frame
     :param why: event reason: 'call', 'line', 'return', 'exception', 'c_call',
                 'c_return', or 'c_exception'
     :param arg: None for event reason, 'call'
-    :return:
+    :return: 
     """
 
     if why == "call":
 
         # increment call trace depth
-        # CallTraceManager.current_trace_depth = \
-        # CallTraceManager.current_trace_depth + 1
+        # CallTraceManager.current_trace_depth = CallTraceManager.current_trace_depth + 1
         # print ("trace depth = ", CallTraceManager.current_trace_depth)
 
         if (current_frame.f_back != None and
@@ -386,10 +383,8 @@ class CallTraceManager:
             p_module = ''
 
             if current_frame.f_back.f_locals.has_key('self'):
-                p_class = current_frame.f_back.f_locals['self'] \
-                    .__class__.__name__
-                p_module = current_frame.f_back.f_locals['self'] \
-                    .__class__.__module__
+                p_class = current_frame.f_back.f_locals['self'].__class__.__name__
+                p_module = current_frame.f_back.f_locals['self'].__class__.__module__
 
             # Current frame details
             c_func = current_frame.f_code.co_name
@@ -402,19 +397,18 @@ class CallTraceManager:
                 c_class = current_frame.f_locals['self'].__class__.__name__
                 c_module = current_frame.f_locals['self'].__class__.__module__
 
-            # print ("c_module = %s" % (c_module))
-            match = CallTraceManager.packages.FindLongestPrefix(c_module)
+            # print ("c_module = %s" % (c_module))    
+            
+            match = CallTraceManager.packages.FindLongestPrefix(c_module) 
             # print ("match = ", match)
             if ((CallTraceManager.trace_all == True or
-                (match.key != None and
-                    match.value == True))):
-
-                #  Order is Caller -> Callee
-                LOG.debug('%s.%s->%s.%s:%s()' % (
-                    p_module, p_class, c_module, c_class, c_func))
+                (match.key != None and 
+                 match.value == True))):
+                
+                 # Order is Caller -> Callee
+                 LOG.debug ('%s.%s->%s.%s:%s()' % (p_module, p_class,c_module, c_class, c_func))
     elif why == "return":
-        # CallTraceManager.current_trace_depth = \
-        # CallTraceManager.current_trace_depth - 1
+        # CallTraceManager.current_trace_depth = CallTraceManager.current_trace_depth - 1
         pass
 
 
@@ -434,8 +428,7 @@ def main(manager='neutron.plugins.cisco.cfg_agent.'
 
     # uncomment to enable call-debug tracing for now
     # CallTraceManager.trace_all = False
-    # longest prefix match based filtering ... \
-    # neutron.plugins.cisco.cfg_agent will match
+    # longest prefix match based filtering ... neutron.plugins.cisco.cfg_agent will match
     # to key = neutron.plugins.cisco, value = True and thus be call-traced
     # CallTraceManager.packages["neutron.plugins.cisco"] = True
     # sys.settrace(trace_calls)

@@ -13,16 +13,18 @@
 #    under the License.
 #
 
-from neutron.common import rpc as n_rpc
+# from neutron.common import rpc as n_rpc
 from neutron.openstack.common import log as logging
 from neutron.plugins.cisco.common import cisco_constants as c_constants
 
-from neutron.openstack.common.rpc import proxy # ICEHOUSE_BACKPORT
+from neutron.openstack.common.rpc import proxy   # ICEHOUSE_BACKPORT
 
 
 LOG = logging.getLogger(__name__)
 
 # class L3RouterJointAgentNotifyAPI(n_rpc.RpcProxy): # ICEHOUSE_BACKPORT
+
+
 class L3RouterJointAgentNotifyAPI(proxy.RpcProxy):
     """API for plugin to notify Cisco cfg agent."""
     BASE_RPC_API_VERSION = '1.0'
@@ -103,8 +105,6 @@ class L3RouterJointAgentNotifyAPI(proxy.RpcProxy):
                                     {'hosting_data': hosting_data,
                                      'deconfigure': deconfigure}, host,
                                     topic=c_constants.CFG_AGENT)
-
-
 
 
 class PhysicalL3RouterJointAgentNotifyAPI(L3RouterJointAgentNotifyAPI):

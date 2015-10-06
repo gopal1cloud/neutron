@@ -19,7 +19,9 @@ from neutron.plugins.cisco.l3.rpc import l3_router_rpc_joint_agent_api
 
 LOG = logging.getLogger(__name__)
 
-class PhysicalL3RouterJointAgentNotifyAPI(l3_router_rpc_joint_agent_api.L3RouterJointAgentNotifyAPI):
+
+class PhysicalL3RouterJointAgentNotifyAPI(
+    l3_router_rpc_joint_agent_api.L3RouterJointAgentNotifyAPI):
     """API for plugin to notify Cisco cfg agent."""
     BASE_RPC_API_VERSION = '1.0'
 
