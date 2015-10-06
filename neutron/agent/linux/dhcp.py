@@ -509,7 +509,6 @@ class Dnsmasq(DhcpLocalProcess):
     def _output_opts_file(self):
         """Write a dnsmasq compatible options file."""
 
-
         if self.conf.enable_isolated_metadata:
             subnet_to_interface_ip = self._make_subnet_interface_ip_map()
 
@@ -630,7 +629,7 @@ class Dnsmasq(DhcpLocalProcess):
         If subnet has a Neutron router attached, we want the hosts to get
         metadata from the router's proxy via their default route instead.
         '''
-        return True # DHCP 121 HACK
+        return True  # DHCP 121 HACK
         if self.conf.enable_isolated_metadata and subnet.ip_version == 4:
             if subnet.gateway_ip is None:
                 return True
