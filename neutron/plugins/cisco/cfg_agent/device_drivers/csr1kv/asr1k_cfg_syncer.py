@@ -19,11 +19,11 @@ import re
 import xml.etree.ElementTree as ET
 
 
-# from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (
-#    asr1k_snippets as asr_snippets)
+from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (
+    asr1k_snippets as asr_snippets)
 
-#  from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (
-#      cisco_csr1kv_snippets as snippets)
+# from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (
+#    cisco_csr1kv_snippets as snippets)
 from neutron.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -288,18 +288,21 @@ class ConfigSyncer(object):
 
         for router_id in del_set:
             vrf_name = "nrouter-%s-%s" % (router_id, self.dep_id)
-            #  confstr = asr_snippets.REMOVE_VRF_DEFN % vrf_name
-            #  rpc_obj = conn.edit_config(target='running', config=confstr)
+            confstr = asr_snippets.REMOVE_VRF_DEFN % vrf_name
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
         for router_id, dep_id in invalid_routers:
             vrf_name = "nrouter-%s-%s" % (router_id, dep_id)
-            #  confstr = asr_snippets.REMOVE_VRF_DEFN % vrf_name
-            #  rpc_obj = conn.edit_config(target='running', config=confstr)
+            confstr = asr_snippets.REMOVE_VRF_DEFN % vrf_name
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
         for router_id in add_set:
-            # vrf_name = "nrouter-%s-%s" % (router_id, self.dep_id)
-            # confstr = asr_snippets.CREATE_VRF_DEFN % vrf_name
+            vrf_name = "nrouter-%s-%s" % (router_id, self.dep_id)
+            confstr = asr_snippets.CREATE_VRF_DEFN % vrf_name
             # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def get_single_cfg(self, cfg_line):
         if len(cfg_line) != 1:
@@ -324,7 +327,7 @@ class ConfigSyncer(object):
                     delete_pool_list.append(pool.text)
                     continue
                 else:
-                    #some other deployment owns this route,don't touch
+                    # some other deployment owns this route,don't touch
                     continue
 
             # Check that VRF exists in openstack DB info
@@ -368,7 +371,8 @@ class ConfigSyncer(object):
             del_cmd = XML_CMD_TAG % ("no %s" % (pool_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Delete pool: %s" % del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def clean_default_route(self, conn, router_id_dict, intf_segment_dict,
                             segment_nat_dict, parsed_cfg, route_regex):
@@ -427,7 +431,8 @@ class ConfigSyncer(object):
             del_cmd = XML_CMD_TAG % ("no %s" % (route_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Delete default route: %s" % del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def clean_snat(self, conn, router_id_dict, intf_segment_dict,
                    segment_nat_dict, parsed_cfg):
@@ -509,7 +514,8 @@ class ConfigSyncer(object):
             del_cmd = XML_CMD_TAG % ("no %s" % (fip_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Delete SNAT: %s" % del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def clean_nat_pool_overload(self, conn, router_id_dict, intf_segment_dict,
                                 segment_nat_dict, parsed_cfg):
@@ -518,8 +524,8 @@ class ConfigSyncer(object):
         for nat_rule in nat_overloads:
             LOG.info("\nnat overload rule: %s" % (nat_rule))
             match_obj = re.match(NAT_POOL_OVERLOAD_REGEX, nat_rule.text)
-            acl_dep_id, segment_id, pool_router_id, pool_dep_id, router_id,
-            dep_id = match_obj.group(1, 2, 3, 4, 5, 6)
+            acl_dep_id, segment_id, pool_router_id, pool_dep_id, router_id, \
+                dep_id = match_obj.group(1, 2, 3, 4, 5, 6)
 
             segment_id = int(segment_id)
 
@@ -581,7 +587,8 @@ class ConfigSyncer(object):
             del_cmd = XML_CMD_TAG % ("no %s" % (nat_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Delete NAT overload: %s" % del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     # For 'interface' style NAT overload, was previously used but not anymore
     def clean_nat_overload(self, conn, router_id_dict, intf_segment_dict,
@@ -591,8 +598,8 @@ class ConfigSyncer(object):
         for nat_rule in nat_overloads:
             LOG.info("\nnat overload rule: %s" % (nat_rule))
             match_obj = re.match(self.NAT_OVERLOAD_REGEX, nat_rule.text)
-            acl_dep_id, segment_id, intf_segment_id, router_id,
-            dep_id = match_obj.group(1, 2, 3, 4, 5)
+            acl_dep_id, segment_id, intf_segment_id, router_id, \
+                dep_id = match_obj.group(1, 2, 3, 4, 5)
 
             segment_id = int(segment_id)
             intf_segment_id = int(intf_segment_id)
@@ -653,7 +660,8 @@ class ConfigSyncer(object):
         for nat_cfg in delete_nat_list:
             del_cmd = XML_CMD_TAG % ("no %s" % (nat_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def check_acl_permit_rules_valid(self, segment_id, acl, intf_segment_dict):
         permit_rules = acl.re_search_children(ACL_CHILD_REGEX)
@@ -726,7 +734,8 @@ class ConfigSyncer(object):
             del_cmd = XML_CMD_TAG % ("no %s" % (acl_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Delete ACL: %s" % del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def subintf_real_ip_check(self, intf_list, is_external, ip_addr, netmask):
 
@@ -790,7 +799,7 @@ class ConfigSyncer(object):
         runcfg_intfs = [obj for obj in parsed_cfg.find_objects("^interf")
                         if obj.re_search_children(INTF_DESC_REGEX)]
 
-        #LOG.info("intf_segment_dict: %s" % (intf_segment_dict))
+        # LOG.info("intf_segment_dict: %s" % (intf_segment_dict))
         pending_delete_list = []
 
         #  TODO: split this big function into smaller functions
@@ -968,22 +977,22 @@ class ConfigSyncer(object):
                 continue
 
             # Delete if there's any hsrp config with wrong group number
-            #del_hsrp_cmd = XML_CMD_TAG % (intf.text)
+            # del_hsrp_cmd = XML_CMD_TAG % (intf.text)
             hsrp_cfg_list = intf.re_search_children(HSRP_REGEX)
             needs_hsrp_delete = False
             for hsrp_cfg in hsrp_cfg_list:
                 hsrp_num = int(hsrp_cfg.re_match(HSRP_REGEX, group=1))
                 if hsrp_num != correct_grp_num:
                     needs_hsrp_delete = True
-                    #del_hsrp_cmd += XML_CMD_TAG % ("no %s" % (hsrp_cfg.text))
+                    # del_hsrp_cmd += XML_CMD_TAG % ("no %s" % (hsrp_cfg.text))
 
             if needs_hsrp_delete:
                 LOG.info("Bad HSRP config for interface, deleting")
                 pending_delete_list.append(intf)
                 continue
-                #confstr = XML_FREEFORM_SNIPPET % (del_hsrp_cmd)
-                #LOG.info("Deleting bad HSRP config: %s" % (confstr))
-                #rpc_obj = conn.edit_config(target='running', config=confstr)
+                # confstr = XML_FREEFORM_SNIPPET % (del_hsrp_cmd)
+                # LOG.info("Deleting bad HSRP config: %s" % (confstr))
+                # rpc_obj = conn.edit_config(target='running', config=confstr)
 
             self.existing_cfg_dict['interfaces'][intf.segment_id] = intf.text
 
@@ -992,4 +1001,5 @@ class ConfigSyncer(object):
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             LOG.info("Deleting %s" % (intf.text))
             #  LOG.info(confstr)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
