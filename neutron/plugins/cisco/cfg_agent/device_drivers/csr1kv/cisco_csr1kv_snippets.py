@@ -30,11 +30,11 @@ CSR (IOS-XE) XML-based configuration snippets
 # """
 
 
-#  =================================================#
+#=================================================#
 # Set ip address on an interface
 # $(config)interface GigabitEthernet 1
 # $(config)ip address 10.0.100.1 255.255.255.0
-#  =================================================#
+#=================================================#
 SET_INTC = """
 <config>
         <cli-config-data>
@@ -44,11 +44,11 @@ SET_INTC = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Enable an interface
 # $(config)interface GigabitEthernet 1
 # $(config)no shutdown
-#  =================================================#
+#=================================================#
 ENABLE_INTF = """
 <config>
         <cli-config-data>
@@ -58,11 +58,11 @@ ENABLE_INTF = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Create VRF
 # $(config)ip routing
 # $(config)ip vrf nrouter-e7d4y5
-#  =================================================#
+#=================================================#
 CREATE_VRF = """
 <config>
         <cli-config-data>
@@ -72,11 +72,11 @@ CREATE_VRF = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Remove VRF
 # $(config)ip routing
 # $(config)no ip vrf nrouter-e7d4y5
-#  =================================================#
+#=================================================#
 REMOVE_VRF = """
 <config>
         <cli-config-data>
@@ -86,13 +86,13 @@ REMOVE_VRF = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Create Subinterface
 # $(config)interface GigabitEthernet 2.500
 # $(config)encapsulation dot1Q 500
 # $(config)vrf forwarding nrouter-e7d4y5
 # $(config)ip address 192.168.0.1 255.255.255.0
-#  =================================================#
+#=================================================#
 CREATE_SUBINTERFACE = """
 <config>
         <cli-config-data>
@@ -105,10 +105,10 @@ CREATE_SUBINTERFACE = """
 
 """
 
-#  =================================================#
+#=================================================#
 # Remove Subinterface
 # $(config)no interface GigabitEthernet 2.500
-#  =================================================#
+#=================================================#
 REMOVE_SUBINTERFACE = """
 <config>
         <cli-config-data>
@@ -117,14 +117,14 @@ REMOVE_SUBINTERFACE = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Enable HSRP on a Subinterface
 # $(config)interface GigabitEthernet 2.500
 # $(config)vrf forwarding nrouter-e7d4y5
 # $(config)standby version 2
 # $(config)standby <group> priority <priority>
 # $(config)standby <group> ip <ip>
-#  =================================================#
+#=================================================#
 SET_INTC_HSRP = """
 <config>
         <cli-config-data>
@@ -138,12 +138,12 @@ SET_INTC_HSRP = """
 
 """
 
-#  =================================================#
+#=================================================#
 # Remove HSRP on a Subinterface
 # $(config)interface GigabitEthernet 2.500
 # $(config)no standby version 2
 # $(config)no standby <group>
-#  =================================================#
+#=================================================#
 REMOVE_INTC_HSRP = """
 <config>
         <cli-config-data>
@@ -155,11 +155,11 @@ REMOVE_INTC_HSRP = """
 
 """
 
-#  =================================================#
+#=================================================#
 # Create Access Control List
 # $(config)ip access-list standard acl_500
 # $(config)permit 192.168.0.1 255.255.255.0
-#  =================================================#
+#=================================================#
 CREATE_ACL = """
 <config>
         <cli-config-data>
@@ -169,10 +169,10 @@ CREATE_ACL = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Remove Access Control List
 # $(config)no ip access-list standard acl_500
-#  =================================================#
+#=================================================#
 REMOVE_ACL = """
 <config>
         <cli-config-data>
@@ -181,47 +181,45 @@ REMOVE_ACL = """
 </config>
 """
 
-#  =========================================================================#
+#=========================================================================#
 # Set Dynamic source translation on an interface
 # Syntax: ip nat inside source list <acl_no> interface <interface>
 # .......vrf <vrf_name> overload
 # eg: $(config)ip nat inside source list acl_500
 #    ..........interface GigabitEthernet3.100 vrf nrouter-e7d4y5 overload
-#  ========================================================================#
+#========================================================================#
 SNAT_CFG = "ip nat inside source list %s interface %s vrf %s overload"
 
 SET_DYN_SRC_TRL_INTFC = """
 <config>
         <cli-config-data>
-            <cmd>ip nat inside source list %s interface %s vrf %s \
-            overload</cmd>
+            <cmd>ip nat inside source list %s interface %s vrf %s overload</cmd>
         </cli-config-data>
 </config>
 
 """
 
-#  =========================================================================#
+#=========================================================================#
 # Remove Dynamic source translation on an interface
 # Syntax: no ip nat inside source list <acl_no> interface <interface>
 # .......vrf <vrf_name> overload
 # eg: $(config)no ip nat inside source list acl_500
 #    ..........interface GigabitEthernet3.100 vrf nrouter-e7d4y5 overload
-#  ========================================================================#
+#========================================================================#
 REMOVE_DYN_SRC_TRL_INTFC = """
 <config>
         <cli-config-data>
-            <cmd>no ip nat inside source list %s interface %s vrf %s \
-            overload</cmd>
+            <cmd>no ip nat inside source list %s interface %s vrf %s overload</cmd>
         </cli-config-data>
 </config>
 
 """
 
-#  =================================================#
+#=================================================#
 # Set NAT
 # Syntax : interface <interface>
 #          ip nat <inside|outside>
-#  =================================================#
+#=================================================#
 SET_NAT = """
 <config>
         <cli-config-data>
@@ -231,11 +229,11 @@ SET_NAT = """
 </config>
 """
 
-#  =================================================#
+#=================================================#
 # Remove NAT
 # Syntax : interface <interface>
 #          no ip nat <inside|outside>
-#  =================================================#
+#=================================================#
 REMOVE_NAT = """
 <config>
         <cli-config-data>
@@ -245,13 +243,13 @@ REMOVE_NAT = """
 </config>
 """
 
-#  =========================================================================#
+#=========================================================================#
 # Set Static source translation on an interface
 # Syntax: ip nat inside source static <fixed_ip> <floating_ip>
 # .......vrf <vrf_name> match-in-vrf
 # eg: $(config)ip nat inside source static 192.168.0.1 121.158.0.5
 #    ..........vrf nrouter-e7d4y5 match-in-vrf
-#  ========================================================================#
+#========================================================================#
 SET_STATIC_SRC_TRL = """
 <config>
         <cli-config-data>
@@ -261,13 +259,13 @@ SET_STATIC_SRC_TRL = """
 
 """
 
-#  =========================================================================#
+#=========================================================================#
 # Remove Static source translation on an interface
 # Syntax: no ip nat inside source static <fixed_ip> <floating_ip>
 # .......vrf <vrf_name> match-in-vrf
 # eg: $(config)no ip nat inside source static 192.168.0.1 121.158.0.5
 #    ..........vrf nrouter-e7d4y5 match-in-vrf
-#  ========================================================================#
+#========================================================================#
 REMOVE_STATIC_SRC_TRL = """
 <config>
         <cli-config-data>
@@ -277,11 +275,11 @@ REMOVE_STATIC_SRC_TRL = """
 
 """
 
-#  ==========================================================================#
+#=============================================================================#
 # Set ip route
-# Syntax:ip route vrf <vrf-name> <destination> <mask> [<interface>] <next hop>
+# Syntax: ip route vrf <vrf-name> <destination> <mask> [<interface>] <next hop>
 # eg: $(config)ip route vrf nrouter-e7d4y5 8.8.0.0  255.255.0.0 10.0.100.255
-#  ==========================================================================#
+#=============================================================================#
 SET_IP_ROUTE = """
 <config>
         <cli-config-data>
@@ -290,13 +288,12 @@ SET_IP_ROUTE = """
 </config>
 """
 
-#  ==========================================================================#
+#=============================================================================#
 # Remove ip route
 # Syntax: no ip route vrf <vrf-name> <destination> <mask>
 #        [<interface>] <next hop>
-# eg: $(config)no ip route vrf nrouter-e7d4y5 8.8.0.0  255.255.0.0 \
-#     10.0.100.255
-#  ==========================================================================#
+# eg: $(config)no ip route vrf nrouter-e7d4y5 8.8.0.0  255.255.0.0 10.0.100.255
+#=============================================================================#
 REMOVE_IP_ROUTE = """
 <config>
         <cli-config-data>
@@ -304,11 +301,11 @@ REMOVE_IP_ROUTE = """
         </cli-config-data>
 </config>
 """
-#  ==========================================================================#
+#=============================================================================#
 # Set default ip route
 # Syntax: ip route vrf <vrf-name> 0.0.0.0 0.0.0.0 [<interface>] <next hop>
 # eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0  0.0.0.0 10.0.100.255
-#  ==========================================================================#
+#=============================================================================#
 DEFAULT_ROUTE_CFG = 'ip route vrf %s 0.0.0.0 0.0.0.0 %s'
 
 SET_DEFAULT_ROUTE = """
@@ -319,11 +316,11 @@ SET_DEFAULT_ROUTE = """
 </config>
 """
 
-#  ==========================================================================#
+#=============================================================================#
 # Remove default ip route
 # Syntax: ip route vrf <vrf-name> 0.0.0.0 0.0.0.0 [<interface>] <next hop>
 # eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0  0.0.0.0 10.0.100.255
-#  ==========================================================================#
+#=============================================================================#
 REMOVE_DEFAULT_ROUTE = """
 <config>
         <cli-config-data>
@@ -332,11 +329,11 @@ REMOVE_DEFAULT_ROUTE = """
 </config>
 """
 
-#  ==========================================================================#
+#=============================================================================#
 # Clear dynamic nat translations. This is used to clear any nat bindings before
 # we can turn off NAT on an interface
 # Syntax: clear ip nat translation [forced]
-#  ==========================================================================#
+#=============================================================================#
 # CLEAR_DYN_NAT_TRANS = """
 # <oper-data-format-text-block>
 #     <exec>clear ip nat translation forced</exec>
@@ -349,3 +346,7 @@ CLEAR_DYN_NAT_TRANS = """
         </cli-config-data>
 </config>
 """
+
+
+
+
