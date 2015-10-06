@@ -383,8 +383,14 @@ def trace_calls(current_frame, why, arg):
 
             # Parent frame details
             # p_func = current_frame.f_back.f_code.co_name
+            current_frame.f_back.f_code.co_name
+            current_frame.f_back.f_code.co_name
             # p_file = current_frame.f_back.f_code.co_filename
+            current_frame.f_back.f_code.co_filename
+            current_frame.f_back.f_code.co_filename
             # p_lineinfo = current_frame.f_back.f_lineno
+            current_frame.f_back.f_lineno
+            current_frame.f_back.f_lineno
             p_class = ''
             p_module = ''
 
@@ -397,7 +403,11 @@ def trace_calls(current_frame, why, arg):
             # Current frame details
             c_func = current_frame.f_code.co_name
             # c_file = current_frame.f_code.co_filename
+            current_frame.f_code.co_filename
+            current_frame.f_code.co_filename
             # c_lineinfo = current_frame.f_lineno
+            current_frame.f_lineno
+            current_frame.f_lineno
             c_class = ''
             c_module = ''
 
