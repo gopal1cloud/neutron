@@ -15,7 +15,7 @@
 # @author: Hareesh Puthalath, Cisco Systems, Inc.
 
 import eventlet
-eventlet.monkey_patch()
+# eventlet.monkey_patch()
 import pprint
 import sys
 import time
@@ -28,7 +28,7 @@ from neutron.agent.linux import external_process
 from neutron.agent.linux import interface
 from neutron.agent import rpc as agent_rpc
 from neutron.common import config as common_config
-from neutron.common import rpc as n_rpc
+# from neutron.common import rpc as n_rpc
 from neutron.common import topics
 from neutron import context as n_context
 from neutron import manager
@@ -45,9 +45,11 @@ from neutron import service as neutron_service
 
 from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
-    (asr1k_routing_driver as asr1kv_driver)
+# from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+#    (asr1k_routing_driver as asr1kv_driver)
 
+# import eventlet
+eventlet.monkey_patch()
 
 LOG = logging.getLogger(__name__)
 
@@ -118,8 +120,8 @@ class CiscoCfgAgent(manager.Manager):
                           "resources.")),
         cfg.StrOpt('routing_svc_helper_class',
                    default='neutron.plugins.cisco.cfg_agent.service_helpers'
-                       '.asr_routing_svc_helper.RoutingServiceHelper \
-                       WithPhyContext',
+                           '.asr_routing_svc_helper.RoutingServiceHelper \
+                           WithPhyContext',
                    help=_("Path of the routing service helper class.")),
     ]
 
@@ -355,7 +357,8 @@ class CallTraceManager:
 
     trace_all = False
 
-    def trace_calls(current_frame, why, arg):
+
+def trace_calls(current_frame, why, arg):
 
     """
     This function is triggered as a callback when sys.trace is invoked.
@@ -376,12 +379,12 @@ class CallTraceManager:
         # print ("trace depth = ", CallTraceManager.current_trace_depth)
 
         if (current_frame.f_back != None and
-            current_frame.f_back.f_code != None):
+           current_frame.f_back.f_code != None):
 
             # Parent frame details
-            p_func = current_frame.f_back.f_code.co_name
-            p_file = current_frame.f_back.f_code.co_filename
-            p_lineinfo = current_frame.f_back.f_lineno
+            # p_func = current_frame.f_back.f_code.co_name
+            # p_file = current_frame.f_back.f_code.co_filename
+            # p_lineinfo = current_frame.f_back.f_lineno
             p_class = ''
             p_module = ''
 
@@ -393,8 +396,8 @@ class CallTraceManager:
 
             # Current frame details
             c_func = current_frame.f_code.co_name
-            c_file = current_frame.f_code.co_filename
-            c_lineinfo = current_frame.f_lineno
+            # c_file = current_frame.f_code.co_filename
+            # c_lineinfo = current_frame.f_lineno
             c_class = ''
             c_module = ''
 

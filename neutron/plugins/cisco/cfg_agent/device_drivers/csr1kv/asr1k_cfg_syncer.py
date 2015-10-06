@@ -302,7 +302,6 @@ class ConfigSyncer(object):
             # rpc_obj = conn.edit_config(target='running', config=confstr)
 
     def get_single_cfg(self, cfg_line):
-
         if len(cfg_line) != 1:
             return None
         else:
