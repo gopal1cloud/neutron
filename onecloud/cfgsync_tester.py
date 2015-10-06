@@ -273,12 +273,14 @@ class ConfigSyncTester(manager.Manager):
         for router_id in del_set:
             vrf_name = "nrouter-%s" % (router_id)
             confstr = snippets.REMOVE_VRF % vrf_name
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
         for router_id in add_set:
             vrf_name = "nrouter-%s" % (router_id)
             confstr = snippets.CREATE_VRF % vrf_name
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def get_single_cfg(self, cfg_line):
         if len(cfg_line) != 1:
@@ -342,7 +344,8 @@ class ConfigSyncTester(manager.Manager):
         for fip_cfg in delete_fip_list:
             del_cmd = XML_CMD_TAG % ("no %s" % (fip_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def clean_nat_overload(self, conn, router_id_dict, intf_segment_dict,
                            segment_nat_dict, parsed_cfg):
@@ -395,7 +398,8 @@ class ConfigSyncTester(manager.Manager):
         for nat_cfg in delete_nat_list:
             del_cmd = XML_CMD_TAG % ("no %s" % (nat_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def check_acl_permit_rules_valid(self, segment_id, acl, intf_segment_dict):
         permit_rules = acl.re_search_children(ACL_CHILD_REGEX)
@@ -449,7 +453,8 @@ class ConfigSyncTester(manager.Manager):
         for acl_cfg in delete_acl_list:
             del_cmd = XML_CMD_TAG % ("no %s" % (acl_cfg))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
     def clean_interfaces(self, conn, intf_segment_dict, segment_nat_dict,
                          parsed_cfg):
@@ -546,24 +551,27 @@ class ConfigSyncTester(manager.Manager):
                         nat_cmd += XML_CMD_TAG % ("ip nat outside")
                         confstr = XML_FREEFORM_SNIPPET % (nat_cmd)
                         print("NAT type mismatch, should be outside")
-                        rpc_obj = conn.edit_config(target='running',
-                                                   config=confstr)
+                        # rpc_obj = conn.edit_config(target='running',
+                        #                            config=confstr)
+                        conn.edit_config(target='running', config=confstr)
                 else:
                     if intf_nat_type != "inside":
                         nat_cmd = XML_CMD_TAG % (intf.text)
                         nat_cmd += XML_CMD_TAG % ("ip nat inside")
                         confstr = XML_FREEFORM_SNIPPET % (nat_cmd)
                         print("NAT type mismatch, should be inside")
-                        rpc_obj = conn.edit_config(target='running',
-                                                   config=confstr)
+                        # rpc_obj = conn.edit_config(target='running',
+                        #                            config=confstr)
+                        conn.edit_config(target='running', config=confstr)
             else:
                 if intf_nat_type is not None:
                     nat_cmd = XML_CMD_TAG % (intf.text)
                     nat_cmd += XML_CMD_TAG % ("no ip nat %s" % (intf_nat_type))
                     confstr = XML_FREEFORM_SNIPPET % (nat_cmd)
                     print("NAT type mismatch, should have no NAT")
-                    rpc_obj = conn.edit_config(target='running',
-                                               config=confstr)
+                    # rpc_obj = conn.edit_config(target='running',
+                    #                           config=confstr)
+                    conn.edit_config(target='running', config=confstr)
 
             # Delete any hsrp config with wrong group number
             del_hsrp_cmd = XML_CMD_TAG % (intf.text)
@@ -578,14 +586,16 @@ class ConfigSyncTester(manager.Manager):
             if needs_hsrp_delete:
                 confstr = XML_FREEFORM_SNIPPET % (del_hsrp_cmd)
                 print("Deleting bad HSRP config: %s" % (confstr))
-                rpc_obj = conn.edit_config(target='running', config=confstr)
+                # rpc_obj = conn.edit_config(target='running', config=confstr)
+                conn.edit_config(target='running', config=confstr)
 
         for intf in pending_delete_list:
             del_cmd = XML_CMD_TAG % ("no %s" % (intf.text))
             confstr = XML_FREEFORM_SNIPPET % (del_cmd)
             print("Deleting %s" % (intf.text))
             print(confstr)
-            rpc_obj = conn.edit_config(target='running', config=confstr)
+            # rpc_obj = conn.edit_config(target='running', config=confstr)
+            conn.edit_config(target='running', config=confstr)
 
 
 class StandaloneService(neutron_service.Service):
