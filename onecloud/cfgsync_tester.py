@@ -127,8 +127,8 @@ class ConfigSyncTester(manager.Manager):
         router_id_dict = {}
         interface_segment_dict = {}
         segment_nat_dict = {}
-        # TODO: could combine segment_nat_dict and interface_segment_dict
-        #      into a single "segment_dict"
+        # TODO(): could combine segment_nat_dict and \
+        # interface_segment_dict into a single "segment_dict"
 
         for router in routers:
 
@@ -230,7 +230,8 @@ class ConfigSyncTester(manager.Manager):
         """Get the CSR's current running config.
         :return: Current IOS running config as multiline string
         """
-        config = conn.get_config(source="running")
+        # config = conn.get_config(source="running")
+        conn.get_config(source="running")
         if config:
             root = ET.fromstring(config._raw)
             running_config = root[0][0]
@@ -466,7 +467,7 @@ class ConfigSyncTester(manager.Manager):
         print("intf_segment_dict: %s" % (intf_segment_dict))
         pending_delete_list = []
 
-        # TODO: split this big function into smaller functions
+        # TODO(): split this big function into smaller functions
         for intf in runcfg_intfs:
             print("\nOpenstack interface: %s" % (intf))
             intf.intf_num = int(intf.re_match(INTF_REGEX, group=1))
@@ -477,8 +478,8 @@ class ConfigSyncTester(manager.Manager):
             # Delete any interfaces where config doesn't match DB
             # Correct config will be added after clearing invalid cfg
 
-            # TODO: Check that interface name (e.g. Port-channel10) matches
-            #       that specified in .ini file
+            # TODO(): Check that interface name (e.g. Port-channel10) matches \
+            # that specified in .ini file
 
             # Check that the interface segment_id exists in the current DB data
             if intf.segment_id not in intf_segment_dict:
