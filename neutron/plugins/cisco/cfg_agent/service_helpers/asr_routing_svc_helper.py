@@ -328,7 +328,7 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                     LOG.exception(_("Driver Exception on router:%(id)s. "
                                     "Error is %(e)s"), {'id': r['id'], 'e': e})
                     self.updated_routers.update([r['id']])
-                    # TODO(): Do fullsync on error to be safe for now,
+                    # TODO(NAME): Do fullsync on error to be safe for now,
                     # can optimize later
                     self.fullsync = True
                     continue

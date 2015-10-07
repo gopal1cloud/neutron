@@ -128,7 +128,7 @@ class ConfigSyncer(object):
         router_id_dict = {}
         interface_segment_dict = {}
         segment_nat_dict = {}
-        #  could combine segment_nat_dict and interface_segment_dict
+        #  TODO(NAME):could combine segment_nat_dict and interface_segment_dict
         #      into a single "segment_dict"
 
         for router in routers:
@@ -802,7 +802,7 @@ class ConfigSyncer(object):
         # LOG.info("intf_segment_dict: %s" % (intf_segment_dict))
         pending_delete_list = []
 
-        #  split this big function into smaller functions
+        #  TODO(NAME): split this big function into smaller functions
         for intf in runcfg_intfs:
             LOG.info("\nOpenstack interface: %s" % (intf))
             intf.segment_id = int(intf.re_match(self.INTF_REGEX, group=1))
@@ -811,8 +811,8 @@ class ConfigSyncer(object):
             # Delete any interfaces where config doesn't match DB
             # Correct config will be added after clearing invalid cfg
 
-            # Check that interface name (e.g. Port-channel10) matches
-            # that specified in .ini file
+            # TODO(NAME): Check that interface name (e.g. Port-channel10)
+            # matches that specified in .ini file
 
             # Check deployment_id
             description = intf.re_search_children(INTF_DESC_REGEX)
