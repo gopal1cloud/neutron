@@ -328,7 +328,7 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                     LOG.exception(_("Driver Exception on router:%(id)s. "
                                     "Error is %(e)s"), {'id': r['id'], 'e': e})
                     self.updated_routers.update([r['id']])
-                    # TODO: Do fullsync on error to be safe for now,
+                    # TODO(): Do fullsync on error to be safe for now,
                     # can optimize later
                     self.fullsync = True
                     continue
@@ -454,8 +454,8 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                     # because of existing entry with identical fixed_ip
                     fips_to_add.append(fip)
 
-        floating_ip_ids_to_remove = (existing_floating_ip_ids
-                                     - cur_floating_ip_ids)
+        floating_ip_ids_to_remove = (existing_floating_ip_ids -
+                                     cur_floating_ip_ids)
 
         LOG.debug("fip_ids_to_remove: %s" % (floating_ip_ids_to_remove))
 
