@@ -492,7 +492,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
         # out_intfc_name = self._get_interface_name_from_hosting_port
         # (ex_gw_port)
         self._get_interface_name_from_hosting_port(ex_gw_port)
-        hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
+        self._get_interface_name_from_hosting_port(ex_gw_port)
+        # hsrp_grp = self._get_hsrp_grp_num_from_ri(ri)
         hsrp_grp = self._get_hsrp_grp_num_from_net_id(ex_gw_port['network_id'])
 
         # First remove NAT from outer interface
