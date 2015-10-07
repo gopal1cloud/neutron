@@ -391,11 +391,12 @@ def trace_calls(current_frame, why, arg):
             p_class = ''
             p_module = ''
 
-            if current_frame.f_back.f_locals.has_key('self'):
-                p_class = current_frame.f_back.f_locals['self'] \
-                    .__class__.__name__
-                p_module = current_frame.f_back.f_locals['self'] \
-                    .__class__.__module__
+            # if current_frame.f_back.f_locals.has_key('self'):
+            if 'self' in current_frame.f_back.f_locals:
+                p_class = \
+                    current_frame.f_back.f_locals['self'].__class__.__name__
+                p_module = \
+                    current_frame.f_back.f_locals['self'].__class__.__module__
 
             # Current frame details
             c_func = current_frame.f_code.co_name
@@ -406,7 +407,8 @@ def trace_calls(current_frame, why, arg):
             c_class = ''
             c_module = ''
 
-            if current_frame.f_locals.has_key('self'):
+            # if current_frame.f_locals.has_key('self'):
+            if 'self' in current_frame.f_locals:
                 c_class = current_frame.f_locals['self'].__class__.__name__
                 c_module = current_frame.f_locals['self'].__class__.__module__
 
