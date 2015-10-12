@@ -318,12 +318,12 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
     def delete_invalid_cfg(self, router_db_info):
         conn = self._get_connection()
-        cfg_syncer = asr1k_cfg_syncer.ConfigSyncer
-        (router_db_info,
-         self._asr_config.deployment_id,
-         self._asr_config.other_dep_ids,
-         self.target_asr['name'],
-         self.target_asr['target_intf'])
+        cfg_syncer = asr1k_cfg_syncer. \
+            ConfigSyncer(router_db_info,
+                         self._asr_config.deployment_id,
+                         self._asr_config.other_dep_ids,
+                         self.target_asr['name'],
+                         self.target_asr['target_intf'])
         cfg_syncer.delete_invalid_cfg(conn)
         return cfg_syncer.existing_cfg_dict
 
