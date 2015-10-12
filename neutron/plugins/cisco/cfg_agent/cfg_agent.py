@@ -15,7 +15,6 @@
 # @author: Hareesh Puthalath, Cisco Systems, Inc.
 
 import eventlet
-# eventlet.monkey_patch()
 import pprint
 import sys
 import time
@@ -48,7 +47,6 @@ from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 # from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
 #    (asr1k_routing_driver as asr1kv_driver)
 
-# import eventlet
 eventlet.monkey_patch()
 
 LOG = logging.getLogger(__name__)
@@ -120,8 +118,8 @@ class CiscoCfgAgent(manager.Manager):
                           "resources.")),
         cfg.StrOpt('routing_svc_helper_class',
                    default='neutron.plugins.cisco.cfg_agent.service_helpers'
-                           '.asr_routing_svc_helper.RoutingServiceHelper \
-                           WithPhyContext',
+                           '.asr_routing_svc_helper.' \
+                           'RoutingServiceHelperWithPhyContext',
                    help=_("Path of the routing service helper class.")),
     ]
 
