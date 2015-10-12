@@ -52,8 +52,9 @@ class PhysicalDeviceDriverManager(driver_mgr.DeviceDriverManager):
             if self._global_driver is not None:
                 return self._global_driver
             else:
-                driver_class = "neutron.plugins.cisco.cfg_agent.device_drivers"
-                "csr1kv.asr1k_routing_driver.ASR1kRoutingDriver"
+                driver_class = "neutron.plugins.cisco.cfg_agent." \
+                               "device_drivers.csr1kv.asr1k_routing_driver." \
+                               "ASR1kRoutingDriver"
                 driver = importutils.import_object(driver_class,
                                                    self._asr_ent)
                 self._global_driver = driver
