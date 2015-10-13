@@ -261,12 +261,12 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
         if self._is_global_router(ri):
             ex_gw_ip = ex_gw_port['subnet']['gateway_ip']
-            virtual_gw_port = self._get_virtual_gw_port_for_ext_net \
-                (ri, ex_gw_port)
+            virtual_gw_port = self._get_virtual_gw_port_for_ext_net(
+                ri, ex_gw_port)
             subintf_ip = virtual_gw_port['fixed_ips'][0]['ip_address']
             if self._is_port_v6(ex_gw_port):
-                self._csr_create_subinterface_v6 \
-                    (ri, ex_gw_port, True, subintf_ip)
+                self._csr_create_subinterface_v6(
+                    ri, ex_gw_port, True, subintf_ip)
             else:
                 self._csr_create_subinterface(ri, ex_gw_port, True, subintf_ip)
         else:
@@ -276,8 +276,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
             # ext network assigned
             # Thus, default route must be handled per Tenant Router
             ex_gw_ip = ex_gw_port['subnet']['gateway_ip']
-            subinterface = self._get_interface_name_from_hosting_port \
-                (ex_gw_port)
+            subinterface = self._get_interface_name_from_hosting_port(
+                ex_gw_port)
             vlan_id = self._get_interface_vlan_from_hosting_port(ex_gw_port)
             if self._fullsync and int(vlan_id) in \
                self._existing_cfg_dict['interfaces']:
@@ -457,8 +457,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
             #  Remove dynamic NAT rules and ACLs
             vrf_name = self._csr_get_vrf_name(ri)
-            ext_intfc_name = self._get_interface_name_from_hosting_port \
-                (ex_port)
+            ext_intfc_name = self._get_interface_name_from_hosting_port(
+                ex_port)
             for acl in acls:
                 self._remove_dyn_nat_rule(acl, ext_intfc_name, vrf_name)
 
