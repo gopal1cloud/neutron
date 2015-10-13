@@ -640,7 +640,7 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
     def _create_ext_subinterface_enable_only(self, subinterface):
         confstr = snippets.ENABLE_INTF % (subinterface)
-        self._edit_running_config(confstr, 
+        self._edit_running_config(confstr,
                                   '%s ENABLE_INTF' %
                                   self.target_asr['name'])
 
@@ -652,8 +652,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
                  vlan_id, ip, mask)
         else:
             confstr = asr_snippets.CREATE_SUBINTERFACE_WITH_ID % \
-            (subinterface, self._asr_config.deployment_id,
-             vlan_id, vrf_name, ip, mask)
+                (subinterface, self._asr_config.deployment_id,
+                 vlan_id, vrf_name, ip, mask)
 
         self._edit_running_config(confstr,
                                   '%s CREATE_SUBINTERFACE' %
@@ -860,8 +860,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
         if is_external is True:
             confstr = asr_snippets.SET_INTC_ASR_HSRP_EXTERNAL % \
-            (subinterface, group, priority, group, ip,
-             group, group, group, vlan)
+                (subinterface, group, priority, group, ip,
+                 group, group, group, vlan)
         else:
             confstr = asr_snippets.SET_INTC_ASR_HSRP % \
                 (subinterface, vrf_name, group,
@@ -873,8 +873,8 @@ class ASR1kRoutingDriver(csr1kv_driver.CSR1kvRoutingDriver):
 
     def _remove_ha_HSRP(self, subinterface, group):
         confstr = snippets.REMOVE_INTC_HSRP % (subinterface, group)
-        action = ("REMOVE_INTC_HSRP (subinterface:%s, Group:%s)" % \
-            (subinterface, group))
+        action = ("REMOVE_INTC_HSRP (subinterface:%s, Group:%s)" %
+                  (subinterface, group))
         self._edit_running_config(confstr, action)
 
     def _create_vrf(self, vrf_name):

@@ -110,7 +110,7 @@ SET_INTC_ASR_HSRP_EXTERNAL = """
 SET_STATIC_SRC_TRL_NO_VRF_MATCH = """
 <config>
         <cli-config-data>
-            <cmd>ip nat inside source static %s %s vrf %s 
+            <cmd>ip nat inside source static %s %s vrf %s
             redundancy neutron-hsrp-grp-%s-%s</cmd>
         </cli-config-data>
 </config>
