@@ -76,8 +76,7 @@ class DeviceDriverManager(object):
                                                    **hosting_device)
                 self._hosting_device_routing_drivers_binding[hd_id] = driver
                 self._drivers[resource_id] = driver
-           
-                                    
+
             return driver
         except ImportError:
             LOG.exception(_("Error loading cfg agent driver %(driver)s for "
@@ -99,7 +98,6 @@ class DeviceDriverManager(object):
         """Remove driver associated to a particular hosting device."""
         if hd_id in self._hosting_device_routing_drivers_binding:
             del self._hosting_device_routing_drivers_binding[hd_id]
-
 
 
 class PhysicalDeviceDriverManager(DeviceDriverManager):
@@ -132,12 +130,12 @@ class PhysicalDeviceDriverManager(DeviceDriverManager):
                 return self._global_driver
             else:
                 # driver_class = resource['router_type']['cfg_agent_driver']
-                driver_class = "neutron.plugins.cisco.cfg_agent.device_drivers." \
-                               "csr1kv.asr1k_routing_driver.ASR1kRoutingDriver"
+                driver_class = "neutron.plugins.cisco.cfg_agent.device_drivers"
+                "csr1kv.asr1k_routing_driver.ASR1kRoutingDriver"
                 driver = importutils.import_object(driver_class,
                                                    self._asr_ent)
                 self._global_driver = driver
-                                    
+
             return driver
         except ImportError:
             LOG.exception(_("Error loading cfg agent driver."))
