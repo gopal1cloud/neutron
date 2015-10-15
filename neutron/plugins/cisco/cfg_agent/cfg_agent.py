@@ -15,7 +15,6 @@
 # @author: Hareesh Puthalath, Cisco Systems, Inc.
 
 import eventlet
-eventlet.monkey_patch()
 import pprint
 import sys
 import time
@@ -28,7 +27,7 @@ from neutron.agent.linux import external_process
 from neutron.agent.linux import interface
 from neutron.agent import rpc as agent_rpc
 from neutron.common import config as common_config
-from neutron.common import rpc as n_rpc
+# from neutron.common import rpc as n_rpc
 from neutron.common import topics
 from neutron import context as n_context
 from neutron import manager
@@ -43,10 +42,12 @@ from neutron.plugins.cisco.cfg_agent import device_status
 from neutron.plugins.cisco.common import cisco_constants as c_constants
 from neutron import service as neutron_service
 
-from neutron.openstack.common.rpc import proxy # ICEHOUSE_BACKPORT
+from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (asr1k_routing_driver as asr1kv_driver)
+# from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+#    (asr1k_routing_driver as asr1kv_driver)
 
+eventlet.monkey_patch()
 
 LOG = logging.getLogger(__name__)
 
@@ -55,10 +56,7 @@ REGISTRATION_RETRY_DELAY = 2
 MAX_REGISTRATION_ATTEMPTS = 30
 
 
-
-        
-
-class CiscoDeviceManagementApi(proxy.RpcProxy): # ICEHOUSE_BACKPORT
+class CiscoDeviceManagementApi(proxy.RpcProxy):  # ICEHOUSE_BACKPORT
     """Agent side of the device manager RPC API."""
 
     BASE_RPC_API_VERSION = '1.0'
@@ -120,7 +118,8 @@ class CiscoCfgAgent(manager.Manager):
                           "resources.")),
         cfg.StrOpt('routing_svc_helper_class',
                    default='neutron.plugins.cisco.cfg_agent.service_helpers'
-                           '.asr_routing_svc_helper.RoutingServiceHelperWithPhyContext',
+                           '.asr_routing_svc_helper.'
+                           'RoutingServiceHelperWithPhyContext',
                    help=_("Path of the routing service helper class.")),
     ]
 
@@ -159,14 +158,14 @@ class CiscoCfgAgent(manager.Manager):
     def get_routing_service_helper(self):
         return self.routing_service_helper
 
-    ## Periodic tasks ##
+    # Periodic tasks
     @periodic_task.periodic_task
     def _backlog_task(self, context):
         """Process backlogged devices."""
         LOG.debug("Processing backlog.")
         self._process_backlogged_hosting_devices(context)
 
-    ## Main orchestrator ##
+    # Main orchestrator
     @lockutils.synchronized('cisco-cfg-agent', 'neutron-')
     def process_services(self, device_ids=None, removed_devices_info=None):
         """Process services managed by this config agent.
@@ -353,12 +352,15 @@ class CallTraceManager:
     # a dictionary that maps package_name (key) to a boolean
     # if true, call_trace is enabled else don't trace
     packages = trie.Trie()
-     
+
     trace_all = False
 
+
 def trace_calls(current_frame, why, arg):
+
     """
-    This function is triggered as a callback when sys.trace is invoked.  For each entered stack frame,
+    This function is triggered as a callback when sys.trace is invoked.
+    For each entered stack frame,
     caller and callee are logged.
     :param current_frame: Current stack frame
     :param why: event reason: 'call', 'line', 'return', 'exception', 'c_call',
@@ -370,46 +372,57 @@ def trace_calls(current_frame, why, arg):
     if why == "call":
 
         # increment call trace depth
-        # CallTraceManager.current_trace_depth = CallTraceManager.current_trace_depth + 1
+        # CallTraceManager.current_trace_depth = \
+        # CallTraceManager.current_trace_depth + 1
         # print ("trace depth = ", CallTraceManager.current_trace_depth)
 
         if (current_frame.f_back != None and
-            current_frame.f_back.f_code != None):
+           current_frame.f_back.f_code != None):
 
             # Parent frame details
-            p_func = current_frame.f_back.f_code.co_name
-            p_file = current_frame.f_back.f_code.co_filename
-            p_lineinfo = current_frame.f_back.f_lineno
+            # p_func = current_frame.f_back.f_code.co_name
+            current_frame.f_back.f_code.co_name
+            # p_file = current_frame.f_back.f_code.co_filename
+            current_frame.f_back.f_code.co_filename
+            # p_lineinfo = current_frame.f_back.f_lineno
+            current_frame.f_back.f_lineno
             p_class = ''
             p_module = ''
 
-            if current_frame.f_back.f_locals.has_key('self'):
-                p_class = current_frame.f_back.f_locals['self'].__class__.__name__
-                p_module = current_frame.f_back.f_locals['self'].__class__.__module__
+            # if current_frame.f_back.f_locals.has_key('self'):
+            if 'self' in current_frame.f_back.f_locals:
+                p_class = \
+                    current_frame.f_back.f_locals['self'].__class__.__name__
+                p_module = \
+                    current_frame.f_back.f_locals['self'].__class__.__module__
 
             # Current frame details
             c_func = current_frame.f_code.co_name
-            c_file = current_frame.f_code.co_filename
-            c_lineinfo = current_frame.f_lineno
+            # c_file = current_frame.f_code.co_filename
+            current_frame.f_code.co_filename
+            # c_lineinfo = current_frame.f_lineno
+            current_frame.f_lineno
             c_class = ''
             c_module = ''
 
-            if current_frame.f_locals.has_key('self'):
+            # if current_frame.f_locals.has_key('self'):
+            if 'self' in current_frame.f_locals:
                 c_class = current_frame.f_locals['self'].__class__.__name__
                 c_module = current_frame.f_locals['self'].__class__.__module__
 
-            # print ("c_module = %s" % (c_module))    
-            
-            match = CallTraceManager.packages.FindLongestPrefix(c_module) 
+            # print ("c_module = %s" % (c_module))
+            match = CallTraceManager.packages.FindLongestPrefix(c_module)
             # print ("match = ", match)
             if ((CallTraceManager.trace_all == True or
-                (match.key != None and 
-                 match.value == True))):
-                
-                 # Order is Caller -> Callee
-                 LOG.debug ('%s.%s->%s.%s:%s()' % (p_module, p_class,c_module, c_class, c_func))
+                (match.key != None and
+                    match.value == True))):
+
+                #  Order is Caller -> Callee
+                LOG.debug('%s.%s->%s.%s:%s()' % (
+                    p_module, p_class, c_module, c_class, c_func))
     elif why == "return":
-        # CallTraceManager.current_trace_depth = CallTraceManager.current_trace_depth - 1
+        # CallTraceManager.current_trace_depth = \
+        # CallTraceManager.current_trace_depth - 1
         pass
 
 
@@ -429,7 +442,8 @@ def main(manager='neutron.plugins.cisco.cfg_agent.'
 
     # uncomment to enable call-debug tracing for now
     # CallTraceManager.trace_all = False
-    # longest prefix match based filtering ... neutron.plugins.cisco.cfg_agent will match
+    # longest prefix match based filtering ... \
+    # neutron.plugins.cisco.cfg_agent will match
     # to key = neutron.plugins.cisco, value = True and thus be call-traced
     # CallTraceManager.packages["neutron.plugins.cisco"] = True
     # sys.settrace(trace_calls)
@@ -440,6 +454,3 @@ def main(manager='neutron.plugins.cisco.cfg_agent.'
         report_interval=cfg.CONF.AGENT.report_interval,
         manager=manager)
     service.launch(server).wait()
-
-
-

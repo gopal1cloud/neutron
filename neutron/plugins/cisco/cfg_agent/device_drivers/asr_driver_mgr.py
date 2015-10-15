@@ -23,6 +23,7 @@ from neutron.plugins.cisco.cfg_agent.device_drivers import driver_mgr
 
 LOG = logging.getLogger(__name__)
 
+
 class PhysicalDeviceDriverManager(driver_mgr.DeviceDriverManager):
 
     def __init__(self, asr_ent):
@@ -51,12 +52,13 @@ class PhysicalDeviceDriverManager(driver_mgr.DeviceDriverManager):
             if self._global_driver is not None:
                 return self._global_driver
             else:
-                driver_class = "neutron.plugins.cisco.cfg_agent.device_drivers." \
-                               "csr1kv.asr1k_routing_driver.ASR1kRoutingDriver"
+                driver_class = "neutron.plugins.cisco.cfg_agent." \
+                               "device_drivers.csr1kv.asr1k_routing_driver." \
+                               "ASR1kRoutingDriver"
                 driver = importutils.import_object(driver_class,
                                                    self._asr_ent)
                 self._global_driver = driver
-                                    
+
             return driver
         except ImportError:
             LOG.exception(_("Error loading cfg agent driver."))

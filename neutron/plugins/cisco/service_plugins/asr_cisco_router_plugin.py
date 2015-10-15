@@ -1,18 +1,38 @@
+# Copyright 2014 Cisco Systems, Inc.  All rights reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author:
+
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
 from neutron.db import agents_db
 # from neutron.db import common_db_mixin  # ICEHOUSE_BACKPORT
 from neutron.db import db_base_plugin_v2
+from neutron.db import l3_rpc_base
 from neutron import manager
+from neutron.plugins.cisco.db.l3 import (asr_l3_router_appliance_db as
+                                         asr_l3_rt_db)
 from neutron.plugins.cisco.db.l3 import device_handling_db
-from neutron.plugins.cisco.db.l3 import asr_l3_router_appliance_db
 from neutron.plugins.cisco.l3.rpc import (l3_router_cfgagent_rpc_cb as
                                           l3_router_rpc)
 from neutron.plugins.cisco.l3.rpc import devices_cfgagent_rpc_cb as devices_rpc
 from neutron.plugins.common import constants
 
+from neutron.openstack.common import log as logging
 from neutron.openstack.common import rpc as o_rpc  # ICEHOUSE_BACKPORT
-from neutron.db import l3_rpc_base 
+
+LOG = logging.getLogger(__name__)
 
 
 DEVICE_OWNER_ROUTER_HA_INTF = "network:router_ha_interface"
@@ -45,7 +65,7 @@ class CiscoRouterPluginRpcCallbacks(l3_router_rpc.L3RouterCfgRpcCallbackMixin,
         @return: String with value "OK"
         """
         try:
-            host = kwargs.get('host')   # ICEHOUSE_BACKPORT
+            kwargs.get('host')   # ICEHOUSE_BACKPORT
         except AttributeError:
             LOG.error("Received heartbeat without host info")
 
@@ -54,7 +74,7 @@ class CiscoRouterPluginRpcCallbacks(l3_router_rpc.L3RouterCfgRpcCallbackMixin,
 
 class PhysicalCiscoRouterPlugin(db_base_plugin_v2.CommonDbMixin,
                                 agents_db.AgentDbMixin,
-                                asr_l3_router_appliance_db.PhysicalL3RouterApplianceDBMixin,
+                                asr_l3_rt_db.PhysicalL3RouterApplianceDBMixin,
                                 device_handling_db.DeviceHandlingMixin):
 
     """Implementation of Cisco L3 Router Service Plugin for Neutron.
@@ -78,12 +98,16 @@ class PhysicalCiscoRouterPlugin(db_base_plugin_v2.CommonDbMixin,
     def setup_rpc(self):
         # RPC support
         self.topic = topics.L3PLUGIN
-        # self.conn = n_rpc.create_connection(new=True)  # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        # self.conn = n_rpc.create_connection(new=True)
         self.conn = o_rpc.create_connection(new=True)
-        self.callbacks = CiscoRouterPluginRpcCallbacks(self)  # ICEHOUSE_BACKPORT
-        self.dispatcher = self.callbacks.create_rpc_dispatcher() # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        self.callbacks = CiscoRouterPluginRpcCallbacks(self)
+        # ICEHOUSE_BACKPORT
+        self.dispatcher = self.callbacks.create_rpc_dispatcher()
         self.endpoints = [CiscoRouterPluginRpcCallbacks(self)]
-        # self.conn.create_consumer(self.topic, self.endpoints, # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        # self.conn.create_consumer(self.topic, self.endpoints,
         #                           fanout=False)
         self.conn.create_consumer(self.topic, self.dispatcher,
                                   fanout=False)

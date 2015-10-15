@@ -19,6 +19,7 @@ from neutron.common import topics
 from neutron.db import agents_db
 # from neutron.db import common_db_mixin  # ICEHOUSE_BACKPORT
 from neutron.db import db_base_plugin_v2
+from neutron.db import l3_rpc_base
 from neutron import manager
 from neutron.plugins.cisco.db.l3 import device_handling_db
 from neutron.plugins.cisco.db.l3 import l3_router_appliance_db
@@ -28,18 +29,18 @@ from neutron.plugins.cisco.l3.rpc import devices_cfgagent_rpc_cb as devices_rpc
 from neutron.plugins.common import constants
 
 from neutron.openstack.common import rpc as o_rpc  # ICEHOUSE_BACKPORT
-from neutron.db import l3_rpc_base 
-from neutron.db import l3_db
+# from neutron.db import l3_db
 
-from neutron.openstack.common.notifier import api as notifier_api
-from neutron.api.v2 import attributes
-from neutron.db import models_v2
+# from neutron.openstack.common.notifier import api as notifier_api
+# from neutron.api.v2 import attributes
+# from neutron.db import models_v2
 from neutron.openstack.common import log as logging
-from neutron.common import exceptions as n_exc
-from neutron.extensions import l3
-from neutron.common import constants as common_constants
+# from neutron.common import exceptions as n_exc
+# from neutron.extensions import l3
+# from neutron.common import constants as common_constants
 
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (asr1k_routing_driver as asr1k_driver)
+# from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+#  (asr1k_routing_driver as asr1k_driver)
 
 LOG = logging.getLogger(__name__)
 
@@ -67,6 +68,8 @@ class CiscoRouterPluginRpcCallbacks(l3_router_rpc.L3RouterCfgRpcCallbackMixin,
         return n_rpc.PluginRpcDispatcher([self])
 
 # class CiscoRouterPlugin(common_db_mixin.CommonDbMixin, # ICEHOUSE_BACKPORT
+
+
 class CiscoRouterPlugin(db_base_plugin_v2.CommonDbMixin,
                         agents_db.AgentDbMixin,
                         l3_router_appliance_db.L3RouterApplianceDBMixin,
@@ -91,12 +94,16 @@ class CiscoRouterPlugin(db_base_plugin_v2.CommonDbMixin,
     def setup_rpc(self):
         # RPC support
         self.topic = topics.L3PLUGIN
-        # self.conn = n_rpc.create_connection(new=True)  # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        # self.conn = n_rpc.create_connection(new=True)
         self.conn = o_rpc.create_connection(new=True)
-        self.callbacks = CiscoRouterPluginRpcCallbacks(self)  # ICEHOUSE_BACKPORT
-        self.dispatcher = self.callbacks.create_rpc_dispatcher() # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        self.callbacks = CiscoRouterPluginRpcCallbacks(self)
+        # ICEHOUSE_BACKPORT
+        self.dispatcher = self.callbacks.create_rpc_dispatcher()
         self.endpoints = [CiscoRouterPluginRpcCallbacks(self)]
-        # self.conn.create_consumer(self.topic, self.endpoints, # ICEHOUSE_BACKPORT
+        # ICEHOUSE_BACKPORT
+        # self.conn.create_consumer(self.topic, self.endpoints,
         #                           fanout=False)
         self.conn.create_consumer(self.topic, self.dispatcher,
                                   fanout=False)
@@ -119,6 +126,3 @@ class CiscoRouterPlugin(db_base_plugin_v2.CommonDbMixin,
         except AttributeError:
             self._plugin = manager.NeutronManager.get_plugin()
             return self._plugin
-
-
-

@@ -1,24 +1,40 @@
-import collections
+# Copyright 2014 Cisco Systems, Inc.  All rights reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+#  import collections
 import eventlet
-import netaddr
+#  import netaddr
 
 from neutron.common import constants as l3_constants
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
-from neutron.common import utils as common_utils
+#  from neutron.common import utils as common_utils
 from neutron import context as n_context
 from neutron.openstack.common import excutils
 from neutron.openstack.common import log as logging
 
 from neutron.plugins.cisco.cfg_agent import cfg_exceptions
-from neutron.plugins.cisco.cfg_agent.device_drivers import asr_driver_mgr as driver_mgr
+from neutron.plugins.cisco.cfg_agent.device_drivers import \
+    asr_driver_mgr as driver_mgr
 from neutron.plugins.cisco.cfg_agent import device_status
 from neutron.plugins.cisco.common import cisco_constants as c_constants
 
-from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 from neutron.openstack.common import rpc as o_rpc  # ICEHOUSE_BACKPORT
+from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 
-from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (asr1k_routing_driver as asr1kv_driver)
+from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+    (asr1k_routing_driver as asr1kv_driver)
 from neutron.plugins.cisco.cfg_agent.service_helpers import routing_svc_helper
 
 LOG = logging.getLogger(__name__)
@@ -76,6 +92,8 @@ class RouterInfo(object):
         return N_ROUTER_PREFIX + self.router_id
 
 # class CiscoRoutingPluginApi(n_rpc.RpcProxy):  # ICEHOUSE_BACKPORT
+
+
 class PhyCiscoRoutingPluginApi(proxy.RpcProxy):
     """RoutingServiceHelper(Agent) side of the  routing RPC API."""
 
@@ -116,6 +134,7 @@ class PhyCiscoRoutingPluginApi(proxy.RpcProxy):
 
     def create_rpc_dispatcher(self):
         return n_rpc.PluginRpcDispatcher([self])
+
 
 class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
 
@@ -216,16 +235,16 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                 resources['removed_routers'] = removed_routers
 
             # Dispatch process_services() for each hosting device
-            #pool = eventlet.GreenPool()
-            #pool.spawn_n(self._process_routers, routers, removed_routers,
+            # pool = eventlet.GreenPool()
+            # pool.spawn_n(self._process_routers, routers, removed_routers,
             #             0, all_routers=all_routers_flag)
-            #pool.waitall()
-            self._process_routers(routers, removed_routers, 0, all_routers=all_routers_flag)
+            # pool.waitall()
+            self._process_routers(routers, removed_routers, 0,
+                                  all_routers=all_routers_flag)
             self.clear_fullsync()
         except Exception:
             LOG.exception(_("Failed processing routers"))
             self.fullsync = True
-
 
     def _adjust_router_list(self, routers):
         for r in routers:
@@ -284,7 +303,6 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                     self._router_removed(router['id'])
                     deleted_id_list.append(router['id'])
 
-
             self._adjust_router_list(routers)
             for r in routers:
                 if r['id'] in deleted_id_list:
@@ -302,23 +320,26 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                     self._process_router(ri)
                 except KeyError as e:
                     LOG.exception(_("Key Error, missing key: %s"), e)
-                    self.updated_routers.update([r['id']]) # make sure the ID is in a list (for set.update)
+                    # make sure the ID is in a list (for set.update)
+                    self.updated_routers.update([r['id']])
                     self.fullsync = True
                     continue
                 except cfg_exceptions.DriverException as e:
                     LOG.exception(_("Driver Exception on router:%(id)s. "
                                     "Error is %(e)s"), {'id': r['id'], 'e': e})
                     self.updated_routers.update([r['id']])
-                    self.fullsync = True # TODO: Do fullsync on error to be safe for now, can optimize later
+                    # TODO(NAME): Do fullsync on error to be safe for now,
+                    # can optimize later
+                    self.fullsync = True
                     continue
 
             # identify and remove routers that no longer exist
-            #for router_id in prev_router_ids - cur_router_ids:
+            # for router_id in prev_router_ids - cur_router_ids:
             #    self._router_removed(router_id)
-            #if removed_routers:
+            # if removed_routers:
             #    for router in removed_routers:
             #        self._router_removed(router['id'])
-            
+
         except Exception:
             LOG.exception(_("Exception in processing routers on device:%s"),
                           device_id)
@@ -358,8 +379,10 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
             internal_ports = ri.router.get(l3_constants.INTERFACE_KEY, [])
             gw_ports = ri.router.get(l3_constants.HA_GW_KEY, [])
 
-            old_ports, new_ports = self._get_port_set_diffs(ri.internal_ports, internal_ports)
-            old_gw_ports, new_gw_ports = self._get_port_set_diffs(ri.ha_gw_ports, gw_ports)
+            old_ports, new_ports = self._get_port_set_diffs(
+                ri.internal_ports, internal_ports)
+            old_gw_ports, new_gw_ports = self._get_port_set_diffs(
+                ri.ha_gw_ports, gw_ports)
 
             for p in new_ports:
                 self._set_subnet_info(p)
@@ -395,7 +418,6 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                 self.updated_routers.update([ri.router_id])
                 LOG.error(e)
 
-
     def _process_router_floating_ips(self, ri, ex_gw_port):
         """Process a router's floating ips.
 
@@ -418,18 +440,18 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
         id_to_fip_map = {}
 
         LOG.debug("CUR FLOATING IPS: %s" % floating_ips)
-        LOG.debug("existing_floating_ip: %s, cur_floating_ip:%s" % (existing_floating_ip_ids,
-                                                                    cur_floating_ip_ids))
+        LOG.debug("existing_floating_ip: %s, cur_floating_ip:%s" % (
+            existing_floating_ip_ids, cur_floating_ip_ids))
         fips_to_add = []
         for fip in floating_ips:
             if fip['port_id']:
                 # store to see if floatingip was remapped
                 id_to_fip_map[fip['id']] = fip
                 if fip['id'] not in existing_floating_ip_ids:
-                    # Ensure that we add only after remove, in case same fixed_ip is
-                    # mapped to different floating_ip within the same loop cycle
-                    # If add occurs before first, cfg will fail because of existing entry
-                    # with identical fixed_ip
+                    # Ensure that we add only after remove, in case same
+                    # fixed_ip is mapped to different floating_ip within the
+                    # same loop cycle If add occurs before first, cfg will fail
+                    # because of existing entry with identical fixed_ip
                     fips_to_add.append(fip)
 
         floating_ip_ids_to_remove = (existing_floating_ip_ids -
@@ -450,9 +472,8 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                 new_fip = id_to_fip_map[fip['id']]
                 new_fixed_ip = new_fip['fixed_ip_address']
                 existing_fixed_ip = fip['fixed_ip_address']
-                LOG.debug("FIP: %s, old FxIP: %s, new FxIP: %s\n\n" % (new_fip,
-                                                                       existing_fixed_ip,
-                                                                       new_fixed_ip))
+                LOG.debug("FIP: %s, old FxIP: %s, new FxIP: %s\n\n" % (
+                    new_fip, existing_fixed_ip, new_fixed_ip))
 
                 if (new_fixed_ip and existing_fixed_ip and
                         new_fixed_ip != existing_fixed_ip):
@@ -462,7 +483,6 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
                                               existing_fixed_ip)
                     fips_to_remove.append(fip)
                     fips_to_add.append(new_fip)
-
 
         for fip in fips_to_remove:
             ri.floating_ips.remove(fip)
@@ -474,28 +494,25 @@ class PhyRouterContext(routing_svc_helper.RoutingServiceHelper):
             ri.floating_ips.append(fip)
 
 
-
-class RoutingServiceHelperWithPhyContext(routing_svc_helper.RoutingServiceHelper):
+class RoutingServiceHelperWithPhyContext(
+    routing_svc_helper.RoutingServiceHelper):
 
     def __init__(self, host, conf, cfg_agent):
         self.conf = conf
         self.cfg_agent = cfg_agent
         self.context = n_context.get_admin_context_without_session()
         self.plugin_rpc = PhyCiscoRoutingPluginApi(topics.L3PLUGIN, host)
-        self._dev_status = device_status.DeviceStatus()        
+        self._dev_status = device_status.DeviceStatus()
         self.topic = '%s.%s' % (c_constants.CFG_AGENT_L3_ROUTING, host)
         self._setup_rpc()
         self._asr_config = asr1kv_driver.ASR1kConfigInfo()
 
         self._asr_contexts = {}
         for asr in self._asr_config.get_asr_list():
-            self._asr_contexts[asr['name']] = PhyRouterContext(asr, 
-                                                               self.plugin_rpc, 
-                                                               self.context,
-                                                               self._dev_status)
-        
+            self._asr_contexts[asr['name']] = PhyRouterContext(
+                asr, self.plugin_rpc, self.context, self._dev_status)
 
-    ### Notifications from Plugin ####
+    # Notifications from Plugin
 
     def router_deleted(self, context, routers):
         """Deal with router deletion RPC message."""
@@ -522,30 +539,30 @@ class RoutingServiceHelperWithPhyContext(routing_svc_helper.RoutingServiceHelper
         LOG.debug('Got router added to agent :%r', payload)
         self.routers_updated(context, payload)
 
-    ### General Notifications  ####
+    #  General Notifications
     def resync_asrs(self, context):
         for asr_name, asr_ctx in self._asr_contexts.iteritems():
             asr_ctx.fullsync = True
 
     # Routing service helper public methods
     def process_service(self, device_ids=None, removed_devices_info=None):
-        
+
         try:
             self.plugin_rpc.agent_heartbeat(self.context)
         except o_rpc.common.Timeout:
             LOG.exception("Server heartbeat timeout")
             self.resync_asrs(self.context)
-            return # don't try to configure ASRs, can't get latest DB info
+            return  # don't try to configure ASRs, can't get latest DB info
 
         pool = eventlet.GreenPool()
         for asr_name, asr_ctx in self._asr_contexts.iteritems():
-            pool.spawn_n(asr_ctx.process_service, device_ids, removed_devices_info)
+            pool.spawn_n(asr_ctx.process_service, device_ids,
+                         removed_devices_info)
         pool.waitall()
 
     def collect_state(self, configurations):
         if len(self._asr_contexts) < 1:
             return configurations
-        
+
         asr_ctx = self._asr_contexts.values()[0]
         return asr_ctx.collect_state(configurations)
-    

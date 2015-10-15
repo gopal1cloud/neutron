@@ -948,9 +948,9 @@ def update_profile_binding(db_session, profile_id, tenants, profile_type):
             profile_id=profile_id, profile_type=profile_type).delete()
         new_tenants_set = set(tenants)
         for tenant_id in new_tenants_set:
-            tenant = n1kv_models_v2.ProfileBinding(profile_type = profile_type,
-                                                   tenant_id = tenant_id,
-                                                   profile_id = profile_id)
+            tenant = n1kv_models_v2.ProfileBinding(profile_type=profile_type,
+                                                   tenant_id=tenant_id,
+                                                   profile_id=profile_id)
             db_session.add(tenant)
 
 
@@ -1116,7 +1116,7 @@ class NetworkProfile_db_mixin(object):
                 delete_profile_binding(context.session, remove_tenant, id)
             is_updated = True
         if original_net_p.segment_type == c_const.NETWORK_TYPE_TRUNK:
-            #TODO(abhraut): Remove check when Trunk supports segment range.
+            # TODO(abhraut): Remove check when Trunk supports segment range.
             if p.get('segment_range'):
                 msg = _("segment_range not required for TRUNK")
                 LOG.error(msg)
@@ -1129,7 +1129,8 @@ class NetworkProfile_db_mixin(object):
                 raise n_exc.InvalidInput(error_message=msg)
         # Update segment range if network profile is not in use.
         if (p.get("segment_range") and
-            p.get("segment_range") != original_net_p.segment_range):
+            p.get("segment_range") != original_net_p.segment_range
+            ):
             if not self._segment_in_use(context.session, original_net_p):
                 delete_segment_allocations(context.session, original_net_p)
                 updated_net_p = update_network_profile(context.session, id, p)
@@ -1386,7 +1387,8 @@ class NetworkProfile_db_mixin(object):
                               c_const.NETWORK_TYPE_TRUNK]:
             if (seg_min > seg_max or
                 seg_min < c_const.NEXUS_VXLAN_MIN or
-                seg_max > c_const.NEXUS_VXLAN_MAX):
+                seg_max > c_const.NEXUS_VXLAN_MAX
+                ):
                 msg = (_("segment range is invalid. Valid range is : "
                          "%(min)s-%(max)s") %
                        {"min": c_const.NEXUS_VXLAN_MIN,
@@ -1408,7 +1410,8 @@ class NetworkProfile_db_mixin(object):
                 if (c_const.NETWORK_TYPE_MULTI_SEGMENT in
                     [profile.segment_type, net_p["segment_type"]] or
                     c_const.NETWORK_TYPE_TRUNK in
-                    [profile.segment_type, net_p["segment_type"]]):
+                    [profile.segment_type, net_p["segment_type"]]
+                    ):
                     continue
                 seg_min, seg_max = self._get_segment_range(
                     net_p["segment_range"])

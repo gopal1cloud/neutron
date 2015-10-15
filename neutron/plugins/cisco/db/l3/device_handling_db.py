@@ -246,7 +246,7 @@ class DeviceHandlingMixin(object):
             #     ...}
             hosting_info = dict((id, {}) for id in hosting_device_ids)
             try:
-                #TODO(bobmel): Modify so service plugins register themselves
+                # TODO(bobmel): Modify so service plugins register themselves
                 self._handle_non_responding_hosting_devices(
                     context, hosting_devices, hosting_info)
             except AttributeError:
@@ -305,8 +305,8 @@ class DeviceHandlingMixin(object):
             agents = [hosting_device.cfg_agent for hosting_device in query
                       if hosting_device.cfg_agent is not None]
         if active is not None:
-            agents = [agent for agent in agents if not
-                      self.is_agent_down(agent['heartbeat_timestamp'])]
+            agents = [entry for entry in agents if not
+                      self.is_agent_down(entry['heartbeat_timestamp'])]
         return agents
 
     def auto_schedule_hosting_devices(self, context, agent_host):
@@ -434,7 +434,7 @@ class DeviceHandlingMixin(object):
         with context.session.begin(subtransactions=True):
             hd_db = l3_models.HostingDevice(
                 id=hd.get('id') or uuidutils.generate_uuid(),
-                complementary_id = hd.get('complementary_id'),
+                complementary_id=hd.get('complementary_id'),
                 tenant_id=tenant_id,
                 device_id=hd.get('device_id'),
                 admin_state_up=hd.get('admin_state_up', True),
