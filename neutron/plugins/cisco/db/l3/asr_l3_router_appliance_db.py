@@ -16,7 +16,6 @@
 
 import copy
 
-from oslo.config import cfg
 from neutron.common import constants as l3_constants
 from neutron.common import exceptions as n_exc
 from neutron import context as n_context
@@ -26,12 +25,14 @@ from neutron.extensions import providernet as pr_net
 from neutron.openstack.common import lockutils
 from neutron.openstack.common import log as logging
 from neutron.plugins.cisco.common import cisco_constants as c_const
+from neutron.plugins.cisco.db.l3 import (l3_router_appliance_db as
+                                         l3_rt_app_db)
 from neutron.plugins.cisco.l3.rpc import asr_l3_router_rpc_joint_agent_api
-from neutron.plugins.cisco.db.l3 import l3_router_appliance_db
 
 from neutron.openstack.common.notifier import api as notifier_api
 
 from neutron.db import model_base
+from oslo.config import cfg
 import sqlalchemy as sa
 
 import time
@@ -45,6 +46,7 @@ PHYSICAL_GLOBAL_ROUTER_ID = "PHYSICAL_GLOBAL_ROUTER_ID"
 
 LOG = logging.getLogger(__name__)
 
+
 class CiscoPhysicalRouter(model_base.BASEV2, models_v2.HasId):
     """Represents a physical cisco router."""
 
@@ -54,8 +56,9 @@ class CiscoPhysicalRouter(model_base.BASEV2, models_v2.HasId):
     status = sa.Column(sa.String(16))
     # other columns TBD
 
+
 class CiscoPhyRouterPortBinding(model_base.BASEV2):
-    """ HSRP interface mappings to physical ASRs """
+    """HSRP interface mappings to physical ASRs."""
 
     __tablename__ = 'cisco_phy_router_port_bindings'
 
@@ -70,19 +73,23 @@ class CiscoPhyRouterPortBinding(model_base.BASEV2):
                           sa.ForeignKey("routers.id", ondelete='CASCADE'))
 
     phy_router_id = sa.Column(sa.String(36),
-                          sa.ForeignKey("cisco_phy_routers.id", ondelete='CASCADE'))
+                              sa.ForeignKey("cisco_phy_routers.id",
+                              ondelete='CASCADE'))
 
-class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceDBMixin):
+
+class PhysicalL3RouterApplianceDBMixin(l3_rt_app_db.L3RouterApplianceDBMixin):
 
     @property
     def l3_cfg_rpc_notifier(self):
         if not hasattr(self, '_l3_cfg_rpc_notifier'):
-            self._l3_cfg_rpc_notifier = (asr_l3_router_rpc_joint_agent_api.
-                                         PhysicalL3RouterJointAgentNotifyAPI(self))
+            self._l3_cfg_rpc_notifier = (
+                asr_l3_router_rpc_joint_agent_api.
+                PhysicalL3RouterJointAgentNotifyAPI(self))
         return self._l3_cfg_rpc_notifier
 
     def _phy_l3_mixin_init(self):
-        from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import (asr1k_routing_driver as asr1k_driver)
+        from neutron.plugins.cisco.cfg_agent.device_drivers.csr1kv import \
+            (asr1k_routing_driver as asr1k_driver)
         self._db_synced = False
         self.asr_cfg_info = asr1k_driver.ASR1kConfigInfo()
 
@@ -90,11 +97,10 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
 
         if self._db_synced is True:
             return
-        
         db_names = []
         cfg_names = []
         missing_db_asr_list = []
-        #asr_list = self.get_asr_list()
+        # asr_list = self.get_asr_list()
 
         phy_router_qry = context.session.query(CiscoPhysicalRouter).all()
 
@@ -111,8 +117,7 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
 
         # Update DB
         with context.session.begin(subtransactions=True):
-
-            # Add ASRs from cfg with names not in db 
+            # Add ASRs from cfg with names not in db
             for asr in asr_list:
                 if asr['name'] not in db_names:
                     new_db_asr = CiscoPhysicalRouter(name=asr['name'])
@@ -122,7 +127,6 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             for missing_asr in missing_db_asr_list:
                 context.session.delete(missing_asr)
                 # missing_asr.delete()
-        
         self._db_synced = True
 
     def _create_hsrp_interfaces(self, context, router_id, subnet, dev_owner):
@@ -134,7 +138,11 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             for asr_idx in range(0, num_asr):
                 asr_port = self._core_plugin.create_port(context, {
                     'port':
-                    {'tenant_id': '', # Hide these ports from non-admin, assign a blank tenant_id
+                    {"""
+                     Hide these ports from non-admin,
+                     assign a blank tenant_id
+                     """
+                     'tenant_id': '',
                      'network_id': subnet['network_id'],
                      'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
                      'mac_address': attributes.ATTR_NOT_SPECIFIED,
@@ -145,9 +153,7 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
 
                 LOG.info("added new port %s" % (asr_port))
                 port_list.append(asr_port)
-        
-            self._bind_hsrp_interfaces_to_router(context, router_id,  port_list)
-        
+            self._bind_hsrp_interfaces_to_router(context, router_id, port_list)
         for port in port_list:
             self.l3_rpc_notifier.routers_updated(
                 context, [router_id], 'add_router_interface')
@@ -161,8 +167,6 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                                 notifier_api.CONF.default_notification_level,
                                 {'router_interface': ha_info})
 
-
-
     def _delete_hsrp_interfaces(self, context, router_id, subnet, dev_owner):
         context = context.elevated()
         # Delete HSRP standby interfaces
@@ -172,10 +176,9 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             asr_ports = rport_qry.filter_by(device_owner=dev_owner,
                                             network_id=subnet['network_id'])
         else:
-             asr_ports = rport_qry.filter_by(device_id=router_id,
-                                             device_owner=dev_owner,
-                                             network_id=subnet['network_id'])
-
+            asr_ports = rport_qry.filter_by(device_id=router_id,
+                                            device_owner=dev_owner,
+                                            network_id=subnet['network_id'])
 
         for asr_port in asr_ports:
             port_list.append(asr_port)
@@ -186,7 +189,6 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
         # don't notify if gw hsrp interfaces are deleted
         if dev_owner == l3_constants.DEVICE_OWNER_ROUTER_HA_GW:
             return
-            
         for port in port_list:
             self.l3_rpc_notifier.routers_updated(
                 context, [router_id], 'remove_router_interface')
@@ -199,57 +201,53 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                                 'router.interface.delete',
                                 notifier_api.CONF.default_notification_level,
                                 {'router_interface': ha_info})
-        
 
     def add_router_interface(self, context, router_id, interface_info):
-        info = super(PhysicalL3RouterApplianceDBMixin, self).add_router_interface(context,
-                                                                                  router_id,
-                                                                                  interface_info)
-
-        
+        info = super(
+            PhysicalL3RouterApplianceDBMixin, self).add_router_interface(
+                context,
+                router_id,
+                interface_info)
         LOG.info("finished parent add_router_interface, info:%s" % (info))
 
-        # If no exception has been raised, we're good to go            
+        # If no exception has been raised, we're good to go
         subnet_id = info['subnet_id']
         subnet = self._core_plugin._get_subnet(context, subnet_id)
 
-        self._create_hsrp_interfaces(context, router_id, subnet, 
+        self._create_hsrp_interfaces(context, router_id, subnet,
                                      l3_constants.DEVICE_OWNER_ROUTER_HA_INTF)
-        
         return info
 
-
-
     def remove_router_interface(self, context, router_id, interface_info):
-        info = super(PhysicalL3RouterApplianceDBMixin, self).remove_router_interface(context,
-                                                                                     router_id,
-                                                                                     interface_info)
+        info = super(
+            PhysicalL3RouterApplianceDBMixin, self).remove_router_interface(
+                context,
+                router_id,
+                interface_info)
 
         LOG.info("finished parent remove_router_interface, info:%s" % (info))
 
-        # If no exception has been raised, we're good to go            
+        # If no exception has been raised, we're good to go
         subnet_id = info['subnet_id']
         subnet = self._core_plugin._get_subnet(context, subnet_id)
-        
         self._delete_hsrp_interfaces(context, router_id, subnet,
                                      l3_constants.DEVICE_OWNER_ROUTER_HA_INTF)
 
         return info
 
-
-    def _bind_hsrp_interfaces_to_router(self, context, router_id,  port_list):
-         # go ahead and map these interfaces to physical ASRs
+    def _bind_hsrp_interfaces_to_router(self, context, router_id, port_list):
+        # go ahead and map these interfaces to physical ASRs
         self.sync_asr_list_with_db(context, self.asr_cfg_info.get_asr_list())
-        
         phy_router_qry = context.session.query(CiscoPhysicalRouter).all()
 
-        for db_asr, port in zip(phy_router_qry, port_list):            
-            port_binding = CiscoPhyRouterPortBinding(port_id=port['id'],
-                                                     subnet_id=port['fixed_ips'][0]['subnet_id'],
-                                                     router_id=router_id,
-                                                     phy_router_id=db_asr.id)
+        for db_asr, port in zip(phy_router_qry, port_list):
+            port_binding = CiscoPhyRouterPortBinding(
+                port_id=port['id'],
+                subnet_id=port['fixed_ips'][0]['subnet_id'],
+                router_id=router_id,
+                phy_router_id=db_asr.id)
 
-            #with context.session.begin(subtransactions=True):
+            # with context.session.begin(subtransactions=True):
             context.session.add(port_binding)
 
     '''
@@ -258,30 +256,31 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
     def _count_ha_routers_on_network(self, context, network_id):
         context = context.elevated()
         rport_qry = context.session.query(models_v2.Port)
-        asr_ports = rport_qry.filter_by(device_owner=l3_constants.DEVICE_OWNER_ROUTER_GW,
-                                        network_id=network_id)
+        asr_ports = rport_qry.filter_by(
+            device_owner=l3_constants.DEVICE_OWNER_ROUTER_GW,
+            network_id=network_id)
 
         num_ports = asr_ports.count()
         LOG.info("num routers on network: %s, %s" % (network_id, num_ports))
         for port in asr_ports:
             LOG.info("port: %s" % (port))
         return num_ports
-    
+
     def _send_physical_global_router_updated_notification(self, context):
         phy_router = self.get_router(context, PHYSICAL_GLOBAL_ROUTER_ID)
         if phy_router:
             self.l3_cfg_rpc_notifier.routers_updated(context,
                                                      [phy_router])
     '''
-    Create a router construct used to hold "global" external network 
+    Create a router construct used to hold "global" external network
     HSRP interfaces of type DEVICE_OWNER_ROUTER_HA_GW
     '''
-    def _create_physical_global_router(self, context):        
+    def _create_physical_global_router(self, context):
         global_router_qry = context.session.query(l3_db.Router)
-        global_router_qry = global_router_qry.filter_by(id=PHYSICAL_GLOBAL_ROUTER_ID)
+        global_router_qry = global_router_qry.filter_by(
+            id=PHYSICAL_GLOBAL_ROUTER_ID)
         if global_router_qry.count() > 0:
-            return       
-        
+            return
         with context.session.begin(subtransactions=True):
             router_db = l3_db.Router(id=PHYSICAL_GLOBAL_ROUTER_ID,
                                      tenant_id='',
@@ -292,51 +291,52 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             self._send_physical_global_router_updated_notification(context)
 
         return
-        #return self._make_router_dict(router_db, process_extensions=False)
+        # return self._make_router_dict(router_db, process_extensions=False)
 
-    ''' 
+    '''
     Create HSRP standby interfaces for external network.
-    
+
     As these are 'global' resources, shared across tenants and routers,
     they will not have a device_id associated.
-    
-    They will only be created when an external network is assigned to a router 
+
+    They will only be created when an external network is assigned to a router
     for the first time.
 
     They will be deleted when an external network is no longer assigned to any
     virtual router.
-    '''    
-    def _create_router_gw_hsrp_interfaces(self, context, router, network_id, existing_port_list):
+    '''
+    def _create_router_gw_hsrp_interfaces(
+        self, context, router, network_id, existing_port_list):
         # Port has no 'tenant-id', as it is hidden from user
 
         with context.session.begin(subtransactions=True):
             num_asr = len(self.asr_cfg_info.get_asr_list())
             for asr_idx in range(0, num_asr):
-                
                 gw_port = self._core_plugin.create_port(context.elevated(), {
-                'port': {'tenant_id': '',  # intentionally not set
-                         'network_id': network_id,
-                         'mac_address': attributes.ATTR_NOT_SPECIFIED,
-                         'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
-                         #'device_id': router['id'],
-                         #'device_id': network_id,
-                         'device_id': PHYSICAL_GLOBAL_ROUTER_ID,
-                         'device_owner': l3_constants.DEVICE_OWNER_ROUTER_HA_GW,
-                         'admin_state_up': True,
-                         'name': ''}})
-                
+                    'port': {'tenant_id': '',  # intentionally not set
+                             'network_id': network_id,
+                             'mac_address': attributes.ATTR_NOT_SPECIFIED,
+                             'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
+                             # 'device_id': router['id'],
+                             # 'device_id': network_id,
+                             'device_id': PHYSICAL_GLOBAL_ROUTER_ID,
+                             'device_owner':
+                             l3_constants.DEVICE_OWNER_ROUTER_HA_GW,
+                             'admin_state_up': True,
+                             'name': ''}})
                 existing_port_list.append(gw_port)
-            
                 if not gw_port['fixed_ips']:
                     for deleted_port in existing_port_list:
-                        self._core_plugin.delete_port(context.elevated(), deleted_port['id'],
+                        self._core_plugin.delete_port(context.elevated(),
+                                                      deleted_port['id'],
                                                       l3_port_check=False)
-                        msg = (_('Not enough IPs available for external network %s') %
+                        msg = (_('Not enough IPs available for \
+                                 external network %s') %
                                network_id)
-                        
                     raise n_exc.BadRequest(resource='router', msg=msg)
 
-            self._bind_hsrp_interfaces_to_router(context, router['id'],  existing_port_list[1:])
+            self._bind_hsrp_interfaces_to_router(context, router['id'],
+                                                 existing_port_list[1:])
 
     def _create_phy_router_gw_port(self, context, router, network_id):
         # Port has no 'tenant-id', as it is hidden from user
@@ -345,7 +345,7 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                      'network_id': network_id,
                      'mac_address': attributes.ATTR_NOT_SPECIFIED,
                      'fixed_ips': attributes.ATTR_NOT_SPECIFIED,
-                     #'device_id': router['id'],
+                     # 'device_id': router['id'],
                      'device_id': PHYSICAL_GLOBAL_ROUTER_ID,
                      'device_owner': l3_constants.DEVICE_OWNER_ROUTER_GW,
                      'admin_state_up': True,
@@ -358,13 +358,14 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                    network_id)
             raise n_exc.BadRequest(resource='router', msg=msg)
 
-        #with context.session.begin(subtransactions=True):
-        #    phy_router = self._get_router(context, PHYSICAL_GLOBAL_ROUTER_ID) #db object, not dict
-        #    phy_router.gw_port = self._core_plugin._get_port(context.elevated(),
-        #                                                     gw_port['id'])
+        # with context.session.begin(subtransactions=True):
+        # db object, not dict
+        #   phy_router = self._get_router(context, PHYSICAL_GLOBAL_ROUTER_ID)
+        #   phy_router.gw_port = self._core_plugin._get_port(
+        #                                                  context.elevated(),
+        #                                                  gw_port['id'])
         #    context.session.add(phy_router)
 
-    
     def _update_router_gw_info(self, context, router_id, info, router=None):
 
         context = context.elevated()
@@ -395,29 +396,34 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             with context.session.begin(subtransactions=True):
                 router.gw_port = None
                 context.session.add(router)
-            
             subnet_id = gw_port['fixed_ips'][0]['subnet_id']
-            subnet = self._core_plugin._get_subnet(context.elevated(), subnet_id)
+            subnet = self._core_plugin._get_subnet(context.elevated(),
+                                                   subnet_id)
 
             self._core_plugin.delete_port(context.elevated(),
                                           gw_port['id'],
                                           l3_port_check=False)
 
             # No external gateway assignments left, clear the HSRP interfaces
-            if self._count_ha_routers_on_network(context, gw_port['network_id']) == 1:
+            if self._count_ha_routers_on_network(context,
+                                                 gw_port['network_id']) == 1:
                 self._delete_hsrp_interfaces(context.elevated(), None, subnet,
-                                             l3_constants.DEVICE_OWNER_ROUTER_HA_GW)
+                                             l3_constants.
+                                             DEVICE_OWNER_ROUTER_HA_GW)
 
-                # Clear gw_port from PHYSICAL_GLOBAL_ROUTER so it can be deleted
-                #phy_router = self._get_router(context.elevated(), PHYSICAL_GLOBAL_ROUTER_ID)
-                #phy_router.gw_port = None
-                #context.session.add(phy_router)
+                # Clear gw_port from PHYSICAL_GLOBAL_ROUTER \
+                # so it can be deleted
+                # phy_router = self._get_router(context.elevated(),
+                #                               PHYSICAL_GLOBAL_ROUTER_ID)
+                # phy_router.gw_port = None
+                # context.session.add(phy_router)
 
-                self._delete_hsrp_interfaces(context.elevated(), PHYSICAL_GLOBAL_ROUTER_ID, subnet,
-                                             l3_constants.DEVICE_OWNER_ROUTER_GW)
+                self._delete_hsrp_interfaces(context.elevated(),
+                                             PHYSICAL_GLOBAL_ROUTER_ID,
+                                             subnet,
+                                             l3_constants.
+                                             DEVICE_OWNER_ROUTER_GW)
                 self._send_physical_global_router_updated_notification(context)
-
-
         if network_id is not None and (gw_port is None or
                                        gw_port['network_id'] != network_id):
             subnets = self._core_plugin._get_subnets_by_network(context,
@@ -426,19 +432,19 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 self._check_for_dup_router_subnet(context, router_id,
                                                   network_id, subnet['id'],
                                                   subnet['cidr'])
-
-            # Only create HA ports if we are the first to create VLAN subinterface for this ext network
+            # Only create HA ports if we are the first to create VLAN \
+            # subinterface for this ext network
             needs_hsrp_create = False
             if self._count_ha_routers_on_network(context, network_id) == 0:
                 needs_hsrp_create = True
-            
-            self._create_router_gw_port(context, router, network_id) 
+            self._create_router_gw_port(context, router, network_id)
 
             if needs_hsrp_create is True:
                 self._create_phy_router_gw_port(context, router, network_id)
-                self._create_router_gw_hsrp_interfaces(context, router, network_id, [router.gw_port])
+                self._create_router_gw_hsrp_interfaces(context, router,
+                                                       network_id,
+                                                       [router.gw_port])
                 self._send_physical_global_router_updated_notification(context)
-
 
     def delete_router(self, context, id):
         LOG.debug("DELETING ROUTER WITH ID: %s" % id)
@@ -453,13 +459,14 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 raise l3.RouterInUse(router_id=id)
 
             device_filter = {'device_id': [id],
-                             'device_owner': [l3_constants.DEVICE_OWNER_ROUTER_INTF]}
+                             'device_owner':
+                             [l3_constants.DEVICE_OWNER_ROUTER_INTF]}
             ports = self._core_plugin.get_ports_count(context.elevated(),
                                                       filters=device_filter)
             if ports:
                 raise l3.RouterInUse(router_id=id)
 
-            #TODO(nati) Refactor here when we have router insertion model
+            # TODO(nati) Refactor here when we have router insertion model
             vpnservice = manager.NeutronManager.get_service_plugins().get(
                 constants.VPN)
             if vpnservice:
@@ -470,7 +477,8 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             # Delete the gw port after the router has been removed to
             # avoid a constraint violation.
             device_filter = {'device_id': [id],
-                             'device_owner': [l3_constants.DEVICE_OWNER_ROUTER_GW]}
+                             'device_owner':
+                             [l3_constants.DEVICE_OWNER_ROUTER_GW]}
             ports = self._core_plugin.get_ports(context.elevated(),
                                                 filters=device_filter)
             for port in ports:
@@ -482,33 +490,34 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             # if this router had no gw port, we are done
             if len(ports) > 0:
 
-                # If this router was the last one with a gw port on this network
+                # If this router was the last one with \
+                # a gw port on this network
                 # delete the HSRP gw ports
                 network_id = ports[0]['network_id']
                 if self._count_ha_routers_on_network(context, network_id) == 1:
                     device_filter = {'network_id': [network_id],
-                                     'device_owner': [l3_constants.DEVICE_OWNER_ROUTER_HA_GW,
-                                                      l3_constants.DEVICE_OWNER_ROUTER_GW]}
-                    gw_ha_ports = self._core_plugin.get_ports(context.elevated(),
-                                                              filters=device_filter)
+                                     'device_owner':
+                                     [l3_constants.DEVICE_OWNER_ROUTER_HA_GW,
+                                      l3_constants.DEVICE_OWNER_ROUTER_GW]}
+                    gw_ha_ports = self._core_plugin.get_ports(
+                        context.elevated(),
+                        filters=device_filter)
                     for gw_ha_port in gw_ha_ports:
                         self._core_plugin._delete_port(context.elevated(),
                                                        gw_ha_port['id'])
-                   
-                    self._send_physical_global_router_updated_notification(context.elevated())
+                    self._send_physical_global_router_updated_notification(
+                        context.elevated())
 
-
-
-    
     def create_router(self, context, router):
         with context.session.begin(subtransactions=True):
-            router_created = (super(l3_router_appliance_db.L3RouterApplianceDBMixin, self).
+            router_created = (super(
+                              l3_rt_app_db.L3RouterApplianceDBMixin, self).
                               create_router(context, router))
-            # self.backlog_router(router_created)  # backlog or start immediatey?
-            self.l3_cfg_rpc_notifier.routers_updated(context, 
+            # backlog or start immediatey?
+            # self.backlog_router(router_created)
+            self.l3_cfg_rpc_notifier.routers_updated(context,
                                                      [router_created])
         return router_created
-
 
     def update_router(self, context, id, router):
         r = router['router']
@@ -527,17 +536,18 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 # already scheduled.
                 self._add_type_and_hosting_device_info(e_context, o_r,
                                                        schedule=False)
-            router_updated = (
-                super(l3_router_appliance_db.L3RouterApplianceDBMixin, self).update_router(
-                    context, id, router))
+            router_updated = (super(
+                              l3_rt_app_db.L3RouterApplianceDBMixin, self).
+                              update_router(context, id, router))
             routers = [copy.deepcopy(router_updated)]
             self._add_type_and_hosting_device_info(e_context, routers[0])
 
         self.l3_cfg_rpc_notifier.routers_updated(context, routers)
         return router_updated
 
-    def _process_sync_data(self, routers, interfaces, floating_ips, ha_gw_interfaces= []):
-        # begin benchmarking 
+    def _process_sync_data(self, routers, interfaces, floating_ips,
+                           ha_gw_interfaces=[]):
+        # begin benchmarking
         start_time = time.time()
 
         routers_dict = {}
@@ -569,10 +579,9 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
         current_time = time.time()
         elapsed_time = current_time - start_time
 
-        LOG.error("*** elapsed time for _process_sync_data routers, %s" % \
+        LOG.error("*** elapsed time for _process_sync_data routers, %s" %
                   (elapsed_time))
         return routers_dict.values()
-
 
     def get_sync_data(self, context, router_ids=None, active=None):
         """Query routers and their related floating_ips, interfaces."""
@@ -586,52 +595,56 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             cur_time2 = time.time()
             LOG.info("  _get_sync_routers: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
-            
             router_ids = [router['id'] for router in routers]
             floating_ips = self._get_sync_floating_ips(context, router_ids)
 
             cur_time2 = time.time()
-            LOG.info("  _get_sync_floating_ips: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _get_sync_floating_ips: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
-
-
             interfaces = self.get_sync_interfaces(context, router_ids)
 
             cur_time2 = time.time()
-            LOG.info("  _get_sync_interfaces normal: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _get_sync_interfaces normal: %ss" %
+                     (cur_time2 - cur_time))
             cur_time = cur_time2
 
-
-            ha_interfaces = self.get_sync_interfaces(context, router_ids,
-                                                     l3_constants.DEVICE_OWNER_ROUTER_HA_INTF)
+            ha_interfaces = self.get_sync_interfaces(
+                context, router_ids,
+                l3_constants.
+                DEVICE_OWNER_ROUTER_HA_INTF)
 
             cur_time2 = time.time()
-            LOG.info("  _get_sync_interfaces HA: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _get_sync_interfaces HA: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
 
-            ha_gw_interfaces = self.get_sync_interfaces(context, router_ids,
-                                                        l3_constants.DEVICE_OWNER_ROUTER_HA_GW)
+            ha_gw_interfaces = self.get_sync_interfaces(
+                context, router_ids,
+                l3_constants.
+                DEVICE_OWNER_ROUTER_HA_GW)
 
             cur_time2 = time.time()
-            LOG.info("  _get_sync_routers HA_GW: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _get_sync_routers HA_GW: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
 
-
-            gw_interfaces = self.get_sync_interfaces(context, router_ids,
-                                                     l3_constants.DEVICE_OWNER_ROUTER_GW)
+            gw_interfaces = self.get_sync_interfaces(
+                context, router_ids,
+                l3_constants.DEVICE_OWNER_ROUTER_GW)
 
             cur_time2 = time.time()
-            LOG.info("  _get_sync_interfaces GW: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _get_sync_interfaces GW: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
-
 
             # Retrieve physical router port bindings
             all_ha_interfaces = ha_interfaces + ha_gw_interfaces
             for ha_intf in all_ha_interfaces:
                 port_id = ha_intf['id']
-                phy_port_qry = context.session.query(CiscoPhyRouterPortBinding, CiscoPhysicalRouter)
-                phy_port_qry = phy_port_qry.filter(CiscoPhyRouterPortBinding.port_id == port_id)
-                phy_port_qry = phy_port_qry.filter(CiscoPhyRouterPortBinding.phy_router_id == CiscoPhysicalRouter.id)
+                phy_port_qry = context.session.query(CiscoPhyRouterPortBinding,
+                                                     CiscoPhysicalRouter)
+                phy_port_qry = phy_port_qry.filter(CiscoPhyRouterPortBinding.
+                                                   port_id == port_id)
+                phy_port_qry = phy_port_qry.filter(
+                    CiscoPhyRouterPortBinding.
+                    phy_router_id == CiscoPhysicalRouter.id)
                 try:
                     port_binding_db, phy_router_db = phy_port_qry.first()
                 except TypeError:
@@ -642,9 +655,8 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 ha_intf['phy_router_db'] = phy_router_db
 
             cur_time2 = time.time()
-            LOG.info("  _phy_port_binding: %ss"% (cur_time2 - cur_time))
+            LOG.info("  _phy_port_binding: %ss" % (cur_time2 - cur_time))
             cur_time = cur_time2
-
 
             interfaces += ha_interfaces
             ha_gw_interfaces += gw_interfaces
@@ -652,8 +664,8 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             cur_time2 = time.time()
             LOG.info("get_sync_data total time: %s" % (cur_time2 - start_time))
 
-        return self._process_sync_data(routers, interfaces, floating_ips, ha_gw_interfaces)
-
+        return self._process_sync_data(routers, interfaces, floating_ips,
+                                       ha_gw_interfaces)
 
     def get_sync_data_ext(self, context, router_ids=None, active=None):
         """Query routers and their related floating_ips, interfaces.
@@ -671,10 +683,14 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 loop_start_time = time.time()
                 self._add_type_and_hosting_device_info(context, router)
                 add_type_time = time.time()
-                self._add_hosting_port_info(context, router, None, network_cache_dict)
+                self._add_hosting_port_info(context, router, None,
+                                            network_cache_dict)
                 add_host_port_time = time.time()
 
-                LOG.info(" per router time, type_time: %s, host_port_time: %s" % (add_type_time - loop_start_time, add_host_port_time - loop_start_time))
+                LOG.info(" per router time, type_time: %s,\
+                         host_port_time: %s" %
+                         (add_type_time - loop_start_time,
+                          add_host_port_time - loop_start_time))
 
             LOG.info("Total time all loops: %s" % (time.time() - start_time))
 
@@ -711,8 +727,9 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
         LOG.debug("_get_router_info_for_agent router:%s" % router)
         credentials = {'username': cfg.CONF.hosting_devices.csr1kv_username,
                        'password': cfg.CONF.hosting_devices.csr1kv_password}
-        #mgmt_ip = (hosting_device.management_port['fixed_ips'][0]['ip_address']
-        #           if hosting_device.management_port else None)
+        # mgmt_ip = (
+        #       hosting_device.management_port['fixed_ips'][0]['ip_address']
+        #       if hosting_device.management_port else None)
         mgmt_ip = "1.1.1.1"
         return {'id': router['id'],
                 'credentials': credentials,
@@ -722,19 +739,20 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
                 'booting_time': 10,
                 'cfg_agent_id': 0}
 
-
     def _add_type_and_hosting_device_info(self, context, router,
                                           binding_info=None, schedule=True):
         """Adds type and hosting device information to a router."""
         LOG.debug("_add_type_and_hosting_device_info router:%s" % router)
         router['router_type'] = {'id': None,
                                  'name': 'CSR1kv_router',
-                                 'cfg_agent_driver': (cfg.CONF.hosting_devices
-                                                      .csr1kv_cfgagent_router_driver)}
+                                 'cfg_agent_driver':
+                                 (cfg.CONF.hosting_devices
+                                  .csr1kv_cfgagent_router_driver)}
         router['hosting_device'] = self._get_router_info_for_agent(router)
         return
 
-    def _add_hosting_port_info(self, context, router, plugging_driver, network_cache_dict):
+    def _add_hosting_port_info(self, context, router, plugging_driver,
+                               network_cache_dict):
         """Adds hosting port information to router ports.
 
         We only populate hosting port info, i.e., reach here, if the
@@ -743,30 +761,32 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
         """
         # cache of hosting port information: {mac_addr: {'name': port_name}}
         hosting_pdata = {}
-                        
         if router['external_gateway_info'] is not None:
-            self._get_hosting_info_for_port_no_vm(context, 
-                                                  router['id'], router['gw_port'],
+            self._get_hosting_info_for_port_no_vm(context,
+                                                  router['id'],
+                                                  router['gw_port'],
                                                   hosting_pdata,
                                                   network_cache_dict)
 
         for itfc in router.get(l3_constants.INTERFACE_KEY, []):
             self._get_hosting_info_for_port_no_vm(context,
-                                                  router['id'], itfc, 
+                                                  router['id'], itfc,
                                                   hosting_pdata,
                                                   network_cache_dict)
-        
         for itfc in router.get(l3_constants.HA_GW_KEY, []):
             self._get_hosting_info_for_port_no_vm(context,
                                                   router['id'], itfc,
                                                   hosting_pdata,
                                                   network_cache_dict)
 
-    def _get_hosting_info_for_port_no_vm(self, context, router_id, port, hosting_pdata, network_cache_dict):
+    def _get_hosting_info_for_port_no_vm(self, context, router_id, port,
+                                         hosting_pdata,
+                                         network_cache_dict):
         LOG.info("Get host info, network_id: %s" % port['network_id'])
         if port['network_id'] not in network_cache_dict:
             network = self._core_plugin.get_networks(context,
-                                                     {'id': [port['network_id']]},
+                                                     {'id':
+                                                      [port['network_id']]},
                                                      [pr_net.SEGMENTATION_ID])
 
             LOG.info("CACHE MISS, network: %s" % (network))
@@ -780,11 +800,11 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             network = network_cache_dict[port['network_id']]
             allocated_vlan = network.get(pr_net.SEGMENTATION_ID)
 
-        #port_db = self._core_plugin._get_port(context, port['id'])
-        #tags = self._core_plugin.get_networks(context,
+        # port_db = self._core_plugin._get_port(context, port['id'])
+        # tags = self._core_plugin.get_networks(context,
         #                                      {'id': [port_db['network_id']]},
         #                                      [pr_net.SEGMENTATION_ID])
-        #allocated_vlan = (None if tags == []
+        # allocated_vlan = (None if tags == []
         #                 else tags[0].get(pr_net.SEGMENTATION_ID))
 
         if hosting_pdata.get('mac') is None:
@@ -803,7 +823,6 @@ class PhysicalL3RouterApplianceDBMixin(l3_router_appliance_db.L3RouterApplianceD
             context, c_const.AGENT_TYPE_CFG, host)
         if not agent.admin_state_up:
             return []
-            
         if router_ids is None:
             router_ids = []
             routers = self.get_routers(context)

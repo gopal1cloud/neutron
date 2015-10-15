@@ -29,7 +29,8 @@ LOG = logging.getLogger(__name__)
 class L3RouterCfgRpcCallbackMixin(object):
     """Mixin for Cisco cfg agent rpc support in L3 routing service plugin."""
 
-    # def cfg_sync_routers(self, context, host, router_ids=None, # ICEHOUSE_BACKPORT
+    # ICEHOUSE_BACKPORT
+    # def cfg_sync_routers(self, context, host, router_ids=None,
     #                      hosting_device_ids=None):
     def sync_routers(self, context, **kwargs):
         """Sync routers according to filters to a specific Cisco cfg agent.
@@ -46,17 +47,18 @@ class L3RouterCfgRpcCallbackMixin(object):
         try:
             host = kwargs.get('host')   # ICEHOUSE_BACKPORT
             router_ids = kwargs.get('router_ids')  #
-            hosting_device_ids = kwargs.get('hostiing_device_ids') #
+            hosting_device_ids = kwargs.get('hostiing_device_ids')  #
 
             LOG.info("TIMING DATA for sync_routers")
             start_time = time.time()
-            
+
             routers = (
                 self._l3plugin.list_active_sync_routers_on_hosting_devices(
                     context, host, router_ids, hosting_device_ids))
 
             cur_time = time.time()
-            LOG.info("list_active_sync_routers time: %s" % (cur_time - start_time))
+            LOG.info("list_active_sync_routers time: %s" % (
+                cur_time - start_time))
 
         except AttributeError:
             routers = []
@@ -73,7 +75,7 @@ class L3RouterCfgRpcCallbackMixin(object):
 
         LOG.debug('Routers returned to Cisco cfg agent@%(agt)s:\n %(routers)s',
                   {'agt': host, 'routers': jsonutils.dumps(routers, indent=5)})
-                     
+
         cur_time2 = time.time()
         LOG.info("debug statement time: %s" % (cur_time2 - cur_time))
 
@@ -96,4 +98,3 @@ class L3RouterCfgRpcCallbackMixin(object):
              portbindings.VIF_TYPE_BINDING_FAILED)):
             self._core_plugin.update_port(
                 context, port['id'], {'port': {portbindings.HOST_ID: host}})
-
