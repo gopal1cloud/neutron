@@ -1,3 +1,17 @@
+# Copyright 2014 Cisco Systems, Inc.  All rights reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
 #=================================================#
 # Create Subinterface (with deployment_id)
 # $(config)interface GigabitEthernet 2.500
@@ -36,7 +50,7 @@ CREATE_SUBINTERFACE_EXTERNAL_WITH_ID = """
 """
 
 #=================================================#
-# Enable HSRP on a Subinterface for ASR 
+# Enable HSRP on a Subinterface for ASR
 # $(config)interface GigabitEthernet 2.500
 # $(config)vrf forwarding nrouter-e7d4y5
 # $(config)standby version 2
@@ -89,14 +103,15 @@ SET_INTC_ASR_HSRP_EXTERNAL = """
 #=========================================================================#
 # Set Static source translation on an interface
 # Syntax: ip nat inside source static <fixed_ip> <floating_ip>
-# .......vrf <vrf_name> redundancy <hsrp group name> 
+# .......vrf <vrf_name> redundancy <hsrp group name>
 # eg: $(config)ip nat inside source static 192.168.0.1 121.158.0.5
-#    ..........vrf nrouter-e7d4y5 redundancy neutron-hsrp-grp-305 
+#    ..........vrf nrouter-e7d4y5 redundancy neutron-hsrp-grp-305
 #========================================================================#
 SET_STATIC_SRC_TRL_NO_VRF_MATCH = """
 <config>
         <cli-config-data>
-            <cmd>ip nat inside source static %s %s vrf %s redundancy neutron-hsrp-grp-%s-%s</cmd>
+            <cmd>ip nat inside source static %s %s vrf %s
+            redundancy neutron-hsrp-grp-%s-%s</cmd>
         </cli-config-data>
 </config>
 
@@ -105,14 +120,15 @@ SET_STATIC_SRC_TRL_NO_VRF_MATCH = """
 #=========================================================================#
 # Remove Static source translation on an interface
 # Syntax: no ip nat inside source static <fixed_ip> <floating_ip>
-# .......vrf <vrf_name> redundancy <hsrp group name> 
+# .......vrf <vrf_name> redundancy <hsrp group name>
 # eg: $(config)no ip nat inside source static 192.168.0.1 121.158.0.5
 #    ..........vrf nrouter-e7d4y5 redundancy neutron-hsrp-grp-305
 #========================================================================#
 REMOVE_STATIC_SRC_TRL_NO_VRF_MATCH = """
 <config>
         <cli-config-data>
-            <cmd>no ip nat inside source static %s %s vrf %s redundancy neutron-hsrp-grp-%s-%s</cmd>
+            <cmd>no ip nat inside source static %s %s vrf %s
+            redundancy neutron-hsrp-grp-%s-%s</cmd>
         </cli-config-data>
 </config>
 
@@ -121,7 +137,8 @@ REMOVE_STATIC_SRC_TRL_NO_VRF_MATCH = """
 #=============================================================================#
 # Set default ip route with interface
 # Syntax: ip route vrf <vrf-name> 0.0.0.0 0.0.0.0 <interface> <next hop>
-# eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0  0.0.0.0 po10.304 10.0.100.255
+# eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0  0.0.0.0 po10.304 \
+# 10.0.100.255
 #=============================================================================#
 DEFAULT_ROUTE_WITH_INTF_CFG = 'ip route vrf %s 0.0.0.0 0.0.0.0 %s %s'
 
@@ -136,7 +153,8 @@ SET_DEFAULT_ROUTE_WITH_INTF = """
 #=============================================================================#
 # Remove default ip route
 # Syntax: ip route vrf <vrf-name> 0.0.0.0 0.0.0.0 <interface> <next hop>
-# eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0 0.0.0.0 po10.304 10.0.100.255
+# eg: $(config)ip route vrf nrouter-e7d4y5 0.0.0.0 0.0.0.0 po10.304 \
+# 10.0.100.255
 #=============================================================================#
 REMOVE_DEFAULT_ROUTE_WITH_INTF = """
 <config>
@@ -214,7 +232,7 @@ CREATE_SUBINTERFACE_V6_NO_VRF_WITH_ID = """
 
 
 #=================================================#
-# Enable HSRP on a Subinterface for ASR 
+# Enable HSRP on a Subinterface for ASR
 # $(config)interface GigabitEthernet 2.500
 # $(config)vrf forwarding nrouter-e7d4y5
 # $(config)standby version 2
@@ -236,12 +254,11 @@ SET_INTC_ASR_HSRP_V6 = """
 </config>
 """
 
-
-
 #=============================================================================#
 # Set default ipv6 route with interface
 # Syntax: ipv6 route vrf <vrf-name> ::/0 <interface> <next hop>
-# eg: $(config)ipv6 route vrf nrouter-e7d4y5 ::/0 po10.304 2001:DB8:CAFE:22::1/64
+# eg: $(config)ipv6 route vrf nrouter-e7d4y5 ::/0 po10.304 \
+# 2001:DB8:CAFE:22::1/64
 #=============================================================================#
 DEFAULT_ROUTE_V6_WITH_INTF_CFG = 'ipv6 route vrf %s ::/0 %s %s'
 
@@ -256,7 +273,8 @@ SET_DEFAULT_ROUTE_V6_WITH_INTF = """
 #=============================================================================#
 # Remove default ipv6 route
 # Syntax: ipv6 route vrf <vrf-name> ::/0 <interface> <next hop>
-# eg: $(config)ipv6 route vrf nrouter-e7d4y5 ::/0 po10.304 2001:DB8:CAFE:22::1/64
+# eg: $(config)ipv6 route vrf nrouter-e7d4y5 ::/0 po10.304 \
+# 2001:DB8:CAFE:22::1/64
 #=============================================================================#
 REMOVE_DEFAULT_ROUTE_V6_WITH_INTF = """
 <config>
@@ -303,7 +321,8 @@ REMOVE_DYN_SRC_TRL_POOL = """
 #=========================================================================#
 # Create a NAT pool
 # Syntax: ip nat pool <pool_name> <start_ip> <end_ip> netmask <netmask_value>
-# eg: $(config)ip nat pool TEST_POOL 192.168.0.20 192.168.0.35 netmask 255.255.0.0
+# eg: $(config)ip nat pool TEST_POOL 192.168.0.20 192.168.0.35 netmask \
+# 255.255.0.0
 #========================================================================#
 CREATE_NAT_POOL = """
 <config>
@@ -316,8 +335,10 @@ CREATE_NAT_POOL = """
 
 #=========================================================================#
 # Delete a NAT pool
-# Syntax: no ip nat pool <pool_name> <start_ip> <end_ip> netmask <netmask_value>
-# eg: $(config)no ip nat pool TEST_POOL 192.168.0.20 192.168.0.35 netmask 255.255.0.0
+# Syntax: no ip nat pool <pool_name> <start_ip> <end_ip> netmask \
+# <netmask_value>
+# eg: $(config)no ip nat pool TEST_POOL 192.168.0.20 192.168.0.35 netmask \
+# 255.255.0.0
 #========================================================================#
 DELETE_NAT_POOL = """
 <config>
@@ -345,7 +366,7 @@ GET_SHOW_CLOCK = """
 <filter type="subtree">
     <config-format-text-cmd>
         <text-filter-spec> | inc FFFFFFFFFFFFFFFF</text-filter-spec>
-    </config-format-text-cmd>    
+    </config-format-text-cmd>  # noqa
     <oper-data-format-text-block>
         <exec>show clock</exec>
     </oper-data-format-text-block>
@@ -362,5 +383,3 @@ EMPTY_SNIPPET = """
         </cli-config-data>
 </config>
 """
-
-

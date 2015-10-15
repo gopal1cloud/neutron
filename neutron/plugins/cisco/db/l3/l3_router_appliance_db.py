@@ -23,7 +23,7 @@ from sqlalchemy.sql import expression as expr
 
 from neutron.common import constants as l3_constants
 from neutron.common import exceptions as n_exc
-from neutron.common import rpc as n_rpc
+# from neutron.common import rpc as n_rpc
 from neutron import context as n_context
 from neutron.db import extraroute_db
 from neutron.db import l3_db
@@ -62,7 +62,10 @@ class RouterInternalError(n_exc.NeutronException):
 class RouterBindingInfoError(n_exc.NeutronException):
     message = _("Could not get binding information for router %(router_id)s.")
 
-# class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_dbonly_mixin): # ICEHOUSE_BACKPORT
+# ICEHOUSE_BACKPORT
+# class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_dbonly_mixin):
+
+
 class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
     """Mixin class implementing Neutron's routing service using appliances."""
 
@@ -134,7 +137,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
         router = self._make_router_dict(router_db)
         with context.session.begin(subtransactions=True):
             e_context = context.elevated()
-                                                            
             r_hd_binding = self._get_router_binding_info(e_context, id)
             self._add_type_and_hosting_device_info(
                 e_context, router, binding_info=r_hd_binding, schedule=False)
@@ -143,7 +145,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
                 if p_drv is not None:
                     p_drv.teardown_logical_port_connectivity(e_context,
                                                              router_db.gw_port)
-                
             # conditionally remove router from backlog just to be sure
             self.remove_router_from_backlog(id)
             if router['hosting_device'] is not None:
@@ -163,7 +164,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
         router_event = 'router.interface.%s' % mapping[action]
         # notifier.info(context, router_event,
         #               {'router_interface': router_interface_info})
-      
         # ICEHOUSE_BACKPORT
         notifier_api.notify(context,
                             notifier_api.publisher_id('network'),
@@ -387,7 +387,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
                 scheduled_routers.append(router)
                 self._backlogged_routers.pop(r_id, None)
 
-
         # notify cfg agents so the scheduled routers are instantiated
         if scheduled_routers:
             self.l3_cfg_rpc_notifier.routers_updated(context,
@@ -481,7 +480,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
         """
         # cache of hosting port information: {mac_addr: {'name': port_name}}
         hosting_pdata = {}
-                        
         if router['external_gateway_info'] is not None:
             h_info, did_allocation = self._populate_hosting_info_for_port(
                 context, router['id'], router['gw_port'],
@@ -567,7 +565,6 @@ class L3RouterApplianceDBMixin(extraroute_db.ExtraRoute_db_mixin):
             context, c_const.AGENT_TYPE_CFG, host)
         if not agent.admin_state_up:
             return []
-            
         query = context.session.query(
             l3_models.RouterHostingDeviceBinding.router_id)
         query = query.join(l3_models.HostingDevice)

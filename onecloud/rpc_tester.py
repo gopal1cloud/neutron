@@ -1,15 +1,29 @@
+# Copyright 2014 Cisco Systems, Inc.  All rights reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
 import sys
 
-from neutron.openstack.common.rpc import proxy # ICEHOUSE_BACKPORT
+from neutron.common import config as common_config
+from neutron.openstack.common.rpc import proxy  # ICEHOUSE_BACKPORT
 from neutron.plugins.cisco.common import cisco_constants as c_constants
 from oslo.config import cfg
-from neutron.common import config as common_config
-
 
 '''
 How to run:
 python rpc_tester.py --config-file /etc/neutron/neutron.conf
 '''
+
 
 class TestRPCNotifier(proxy.RpcProxy):
     BASE_RPC_API_VERSION = '1.0'
@@ -37,6 +51,3 @@ def rpc_tester_main():
 
 if __name__ == "__main__":
     rpc_tester_main()
-
-
- 
